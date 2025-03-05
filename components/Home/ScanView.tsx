@@ -619,6 +619,45 @@ export default function ScanView({ views }: ScanViewProps) {
     })).filter((category) => category.issues.length > 0);
   };
 
+  // Add this function to count and sort issues
+  const getIssueSummary = useCallback(() => {
+    // Count issues by type
+    const issueCount: { [key: string]: { count: number; category: string } } =
+      {};
+
+    markerPoints
+      .filter((marker) => marker.viewIndex === currentViewIndex)
+      .forEach((marker) => {
+        if (marker.issues && marker.issues.length > 0 && marker.category) {
+          marker.issues.forEach((issue) => {
+            if (!issue.type) return;
+
+            const key = issue.type;
+            if (issueCount[key]) {
+              issueCount[key].count += 1;
+            } else {
+              issueCount[key] = {
+                count: 1,
+                category: marker.category || '',
+              };
+            }
+          });
+        }
+      });
+
+    // Convert to array and sort by count
+    const sortedIssues = Object.entries(issueCount)
+      .map(([type, data]) => ({
+        type,
+        count: data.count,
+        category: data.category,
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5); // Take only top 5
+
+    return sortedIssues;
+  }, [markerPoints, currentViewIndex]);
+
   return (
     <View style={styles.scanView}>
       <View style={styles.blueprintContainer}>
@@ -825,6 +864,70 @@ export default function ScanView({ views }: ScanViewProps) {
             </LinearGradient>
           </TouchableOpacity>
         </View>
+
+        {/* Issue summary in top-left */}
+        <View style={styles.issueSummaryContainer}>
+          {getIssueSummary().map((issue, index) => {
+            // Get shape info for the category
+            const shapeInfo = ISSUE_SHAPES[issue.category] || {
+              type: 'circle',
+              color: '#0066cc',
+            };
+
+            return (
+              <View key={`summary-${index}`} style={styles.issueSummaryItem}>
+                <View style={styles.issueSummaryIconContainer}>
+                  {/* Show appropriate shape based on category */}
+                  {shapeInfo.type === 'circle' && (
+                    <View
+                      style={[
+                        styles.miniShapeMarker,
+                        styles.miniCircleMarker,
+                        { backgroundColor: shapeInfo.color },
+                      ]}
+                    />
+                  )}
+                  {shapeInfo.type === 'square' && (
+                    <View
+                      style={[
+                        styles.miniShapeMarker,
+                        styles.miniSquareMarker,
+                        { backgroundColor: shapeInfo.color },
+                      ]}
+                    />
+                  )}
+                  {shapeInfo.type === 'triangle' && (
+                    <View style={styles.miniTriangleContainer}>
+                      <View
+                        style={[
+                          styles.miniTriangleMarker,
+                          { borderBottomColor: shapeInfo.color },
+                        ]}
+                      />
+                    </View>
+                  )}
+                  {shapeInfo.type === 'hexagon' && (
+                    <View
+                      style={[
+                        styles.miniShapeMarker,
+                        styles.miniHexagonMarker,
+                        { backgroundColor: shapeInfo.color },
+                      ]}
+                    />
+                  )}
+                </View>
+                <Text style={styles.issueSummaryText} numberOfLines={1}>
+                  {issue.type}
+                </Text>
+                <View style={styles.issueSummaryCount}>
+                  <Text style={styles.issueSummaryCountText}>
+                    {issue.count}
+                  </Text>
+                </View>
+              </View>
+            );
+          })}
+        </View>
       </View>
 
       <Modal
@@ -881,24 +984,23 @@ export default function ScanView({ views }: ScanViewProps) {
               </View>
             </View>
 
+            {/* Add search bar */}
+            <View style={styles.searchContainer}>
+              <AntDesign
+                name="search1"
+                size={18}
+                color="#999"
+                style={styles.searchIcon}
+              />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search issues..."
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                clearButtonMode="while-editing"
+              />
+            </View>
             <ScrollView style={styles.issueListContainer}>
-              {/* Add search bar */}
-              <View style={styles.searchContainer}>
-                <AntDesign
-                  name="search1"
-                  size={18}
-                  color="#999"
-                  style={styles.searchIcon}
-                />
-                <TextInput
-                  style={styles.searchInput}
-                  placeholder="Search issues..."
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  clearButtonMode="while-editing"
-                />
-              </View>
-
               <View style={styles.issueCategoriesContainer}>
                 {getFilteredCategories().map((category, catIndex) => (
                   <View
@@ -1509,5 +1611,41 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 2,
     transform: [{ rotate: '30deg' }],
+  },
+  issueSummaryContainer: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    zIndex: 20,
+    maxWidth: '50%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 4,
+  },
+  issueSummaryItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 2,
+  },
+  issueSummaryIconContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  issueSummaryText: {
+    fontSize: 12,
+    color: '#333',
+    flex: 1,
+    marginRight: 8,
+  },
+  issueSummaryCount: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  issueSummaryCountText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#333',
   },
 });
