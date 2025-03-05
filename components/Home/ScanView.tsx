@@ -114,6 +114,10 @@ export default function ScanView({ views }: ScanViewProps) {
   const [issueType, setIssueType] = useState('');
   const [issueDescription, setIssueDescription] = useState('');
 
+  // Add these new state variables at the beginning of your component
+  const [markerHistory, setMarkerHistory] = useState<MarkerPoint[][]>([]);
+  const [maxHistorySteps, setMaxHistorySteps] = useState(10); // Default 10 steps undo
+
   // Add this state variable with the other state declarations
   const [issues, setIssues] = useState<IssueData[]>([]);
 
@@ -225,6 +229,12 @@ export default function ScanView({ views }: ScanViewProps) {
   // Add a state to track if we're in "edit marker" mode
   const [editingMarker, setEditingMarker] = useState(false);
 
+  // Add this state to track potential new marker position
+  const [pendingMarkerPosition, setPendingMarkerPosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+
   // Tính toán tỷ lệ giữa tọa độ click và tọa độ thực tế trên ảnh
   const getOriginalCoordinates = (
     x: number,
@@ -271,10 +281,40 @@ export default function ScanView({ views }: ScanViewProps) {
     };
   };
 
+  // Fix the saveHistoryState function to properly preserve the marker state
+  const saveHistoryState = () => {
+    setMarkerHistory((prev) => {
+      // Create a deep copy of current markers
+      const currentState = JSON.parse(JSON.stringify(markerPoints));
+
+      // Add to history and limit number of steps
+      const newHistory = [...prev, currentState];
+      if (newHistory.length > maxHistorySteps) {
+        return newHistory.slice(newHistory.length - maxHistorySteps);
+      }
+      return newHistory;
+    });
+  };
+
+  // Fix the handleUndo function to properly handle the history
+  const handleUndo = () => {
+    if (markerHistory.length > 0) {
+      // Get the previous state (second to last item in history)
+      const previousState = markerHistory[markerHistory.length - 1];
+
+      // Update markers to previous state
+      setMarkerPoints(previousState);
+
+      // Remove the restored state from history
+      setMarkerHistory((prev) => prev.slice(0, prev.length - 1));
+    }
+  };
+
+  // Update handleBlueprintPress to store position but not create marker yet
   const handleBlueprintPress = (event: GestureResponderEvent) => {
     const { locationX, locationY } = event.nativeEvent;
 
-    // Store absolute coordinates (for percentage calculation)
+    // Store absolute coordinates
     const absoluteX = locationX;
     const absoluteY = locationY;
 
@@ -287,22 +327,13 @@ export default function ScanView({ views }: ScanViewProps) {
       setSelectedPoint({ x: clickedMarker.x, y: clickedMarker.y });
       setIssues([...clickedMarker.issues]);
       setEditingMarker(true);
+      setPendingMarkerPosition(null); // No pending marker when editing
     } else {
-      // Create new marker
-      const newMarkerId = generateUniqueId();
-      const newMarker: MarkerPoint = {
-        x: absoluteX,
-        y: absoluteY,
-        viewIndex: currentViewIndex,
-        id: newMarkerId,
-        issues: [{ type: '', description: '' }],
-      };
-
-      setMarkerPoints((prev) => [...prev, newMarker]);
-      setActiveMarkerId(newMarkerId);
+      // Store coordinates for potential new marker but don't create it yet
       setSelectedPoint({ x: absoluteX, y: absoluteY });
-      setIssues([{ type: '', description: '' }]);
+      setPendingMarkerPosition({ x: absoluteX, y: absoluteY });
       setEditingMarker(false);
+      setActiveMarkerId(null);
     }
 
     // Show modal
@@ -485,6 +516,7 @@ export default function ScanView({ views }: ScanViewProps) {
     }
   };
 
+  // Update handleCloseModal to clear pending marker
   const handleCloseModal = () => {
     // Animate the modal closing
     Animated.timing(slideAnim, {
@@ -493,6 +525,7 @@ export default function ScanView({ views }: ScanViewProps) {
       useNativeDriver: true,
     }).start(() => {
       setShowIssueModal(false);
+      setPendingMarkerPosition(null); // Clear pending marker position on cancel
     });
   };
 
@@ -556,40 +589,58 @@ export default function ScanView({ views }: ScanViewProps) {
     handleCloseModal();
   };
 
+  // Modify handleSelectAndSaveIssue to explicitly ensure category is saved
   const handleSelectAndSaveIssue = (category: string, issueName: string) => {
+    // Save current state to history before updating
+    saveHistoryState();
+
     // Create a new issue with the selected type
     const newIssue = {
       type: issueName,
-      description: '', // No description needed
+      description: '',
       category: category,
     };
 
-    // Update the marker with this issue and set its primary category
-    setMarkerPoints((prevMarkers) =>
-      prevMarkers.map((marker) =>
-        marker.id === activeMarkerId
-          ? {
-              ...marker,
-              issues: [newIssue], // Replace existing issues with this one
-              category: category, // Set the primary category for the marker
-            }
-          : marker
-      )
-    );
+    if (activeMarkerId) {
+      // Update existing marker
+      setMarkerPoints((prevMarkers) =>
+        prevMarkers.map((marker) =>
+          marker.id === activeMarkerId
+            ? {
+                ...marker,
+                issues: [newIssue],
+                category: category,
+              }
+            : marker
+        )
+      );
+    } else if (pendingMarkerPosition) {
+      // Create new marker only when user selects an issue
+      const newMarkerId = generateUniqueId();
+      const newMarker: MarkerPoint = {
+        x: pendingMarkerPosition.x,
+        y: pendingMarkerPosition.y,
+        viewIndex: currentViewIndex,
+        id: newMarkerId,
+        issues: [newIssue],
+        category: category,
+      };
 
-    // Show feedback
-    console.log(
-      `Issue "${issueName}" added to marker - Shape: ${ISSUE_SHAPES[category].type}`
-    );
+      setMarkerPoints((prev) => [...prev, newMarker]);
+    }
 
     // Close the modal
     handleCloseModal();
   };
 
   // Add this function to handle marker deletion
+  // Modify handleDeleteMarker to save history before deleting
   const handleDeleteMarker = () => {
     // Ask for confirmation before deleting
     if (activeMarkerId) {
+      // Save current state to history before deleting
+      saveHistoryState();
+
       // Remove the marker with activeMarkerId from markerPoints
       setMarkerPoints((prevMarkers) =>
         prevMarkers.filter((marker) => marker.id !== activeMarkerId)
@@ -840,6 +891,23 @@ export default function ScanView({ views }: ScanViewProps) {
 
         {/* Nút zoom in/out */}
         <View style={styles.zoomControlsContainer}>
+          <TouchableOpacity
+            style={[
+              styles.zoomControlButton,
+              { marginBottom: 15 },
+              markerHistory.length === 0 && { opacity: 0.5 },
+            ]}
+            onPress={handleUndo}
+            disabled={markerHistory.length === 0}
+          >
+            <LinearGradient
+              colors={['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.3)']}
+              style={styles.zoomButtonGradient}
+            >
+              <MaterialIcons name="undo" size={24} color="#fff" />
+            </LinearGradient>
+          </TouchableOpacity>
+
           <TouchableOpacity
             style={styles.zoomControlButton}
             onPress={handleZoomIn}
@@ -1457,7 +1525,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: 'bold',
     marginBottom: 8,
-    backgroundColor: '#f5f5f5',
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 6,
