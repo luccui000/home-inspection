@@ -712,6 +712,11 @@ export default function ScanView({ views }: ScanViewProps) {
   return (
     <View style={styles.scanView}>
       <View style={styles.blueprintContainer}>
+        <View style={styles.viewIndicatorContainer}>
+          <Text style={styles.viewIndicatorText}>
+            {views[currentViewIndex].name || `View ${currentViewIndex + 1}`}
+          </Text>
+        </View>
         {/* Canh giữa mũi tên trái */}
         <TouchableOpacity
           style={[styles.navigationArrow, styles.leftArrow]}
@@ -1010,7 +1015,7 @@ export default function ScanView({ views }: ScanViewProps) {
               styles.modalContent,
               {
                 transform: [{ translateY: slideAnim }],
-                height: height * 0.7, // Reduce height as we don't need as much space
+                height: height * 0.8, // Reduce height as we don't need as much space
               },
             ]}
           >
@@ -1038,18 +1043,10 @@ export default function ScanView({ views }: ScanViewProps) {
             </View>
 
             <View style={styles.locationInfoContainer}>
-              <Text style={styles.modalLabel}>Location</Text>
-              <View style={styles.coordinatesContainer}>
-                <Text style={styles.coordinates}>
-                  X: {Math.round(selectedPoint.x)}, Y:{' '}
-                  {Math.round(selectedPoint.y)}
-                </Text>
-                <Text style={styles.viewLabel}>
-                  View:{' '}
-                  {views[currentViewIndex].name ||
-                    `View ${currentViewIndex + 1}`}
-                </Text>
-              </View>
+              <Text style={styles.viewLabel}>
+                View:{' '}
+                {views[currentViewIndex].name || `View ${currentViewIndex + 1}`}
+              </Text>
             </View>
 
             {/* Add search bar */}
@@ -1169,6 +1166,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
+  },
+  viewIndicatorContainer: {
+    position: 'absolute',
+    top: 10,
+    zIndex: 20,
+    alignSelf: 'center',
+  },
+  viewIndicatorGradient: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 20,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  viewIndicatorText: {
+    fontSize: 16,
+    color: '#000',
+    textAlign: 'center',
   },
   imageContainer: {
     width: '100%',
@@ -1389,11 +1406,12 @@ const styles = StyleSheet.create({
   cancelButton: {
     padding: 10,
     borderRadius: 5,
-    backgroundColor: '#ccc',
+    backgroundColor: '#eee',
   },
   cancelButtonText: {
     fontSize: 16,
     color: '#333',
+    textAlign: 'center',
   },
   saveButton: {
     padding: 10,

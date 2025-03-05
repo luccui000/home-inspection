@@ -24,7 +24,7 @@ export default function Header() {
         style={styles.historyButton}
         onPress={navigateToHistory}
       >
-        <MaterialIcons name="history" size={24} color="#fff" />
+        <MaterialIcons name="history" size={16} color="#fff" />
         <Text style={styles.historyButtonText}>History</Text>
       </TouchableOpacity>
     </View>
@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'ios' ? 50 : 8, // Điều chỉnh padding top cho iOS
   },
   title: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#fff',
   },
