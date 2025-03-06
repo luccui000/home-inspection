@@ -33,6 +33,11 @@ export default function Header() {
 
 const styles = StyleSheet.create({
   header: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000, // En
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',

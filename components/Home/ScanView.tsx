@@ -47,41 +47,87 @@ interface IssueData {
   image?: string;
 }
 
-// Add this near the top with other interfaces
+// First, let's update the ISSUE_CATEGORIES data structure
 const ISSUE_CATEGORIES = [
   {
-    name: 'Structural',
-    issues: [
-      'Foundation Cracks',
-      'Wall Damage',
-      'Ceiling Damage',
-      'Floor Issues',
-      'Beam Problems',
+    id: 'all',
+    label: 'All',
+    items: [
+      {
+        name: 'Structural',
+        issues: ['幅0.5mm以上ひび', '深さ20mm以上欠損'],
+      },
+      {
+        name: 'Plumbing',
+        issues: ['コンクリート劣化', 'さび汁、ひび、欠損、白華	'],
+      },
+      {
+        name: 'Electrical',
+        issues: ['コンクリート劣化', 'さび汁、ひび、欠損、白華	'],
+      },
+      {
+        name: 'Other',
+        issues: ['コンクリート劣化', 'さび汁、ひび、欠損、白華	'],
+      },
     ],
   },
   {
-    name: 'Plumbing',
-    issues: [
-      'Water Leak',
-      'Pipe Damage',
-      'Drainage Issues',
-      'Fixture Problems',
-      'Water Pressure',
+    id: 'wall-paint',
+    label: 'Wall paint',
+    items: [
+      {
+        name: 'Structural',
+        issues: [
+          'Foundation Cracks',
+          'Wall Damage',
+          'Ceiling Damage',
+          'Floor Issues',
+          'Beam Problems',
+        ],
+      },
     ],
   },
   {
-    name: 'Electrical',
-    issues: [
-      'Wiring Issues',
-      'Outlet Problems',
-      'Lighting Issues',
-      'Circuit Breaker',
-      'Power Outage',
+    id: 'plaster',
+    label: 'Plaster',
+    items: [
+      {
+        name: 'Plumbing',
+        issues: [
+          'Water Leak',
+          'Pipe Damage',
+          'Drainage Issues',
+          'Fixture Problems',
+          'Water Pressure',
+        ],
+      },
     ],
   },
   {
-    name: 'Other',
-    issues: ['General Maintenance', 'Safety Concerns', 'Miscellaneous'],
+    id: 'mortar',
+    label: 'Mortar',
+    items: [
+      {
+        name: 'Electrical',
+        issues: [
+          'Wiring Issues',
+          'Outlet Problems',
+          'Lighting Issues',
+          'Circuit Breaker',
+          'Power Outage',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'other',
+    label: 'Other',
+    items: [
+      {
+        name: 'Other',
+        issues: ['General Maintenance', 'Safety Concerns', 'Miscellaneous'],
+      },
+    ],
   },
 ];
 
@@ -123,6 +169,9 @@ export default function ScanView({ views }: ScanViewProps) {
 
   // Add a new state for search functionality
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Add this state variable for tracking the active tab
+  const [activeTab, setActiveTab] = useState('all');
 
   // State zoom
   const [isZoomed, setIsZoomed] = useState(false);
@@ -349,13 +398,30 @@ export default function ScanView({ views }: ScanViewProps) {
 
   // Helper function to find if user clicked on an existing marker
   const findMarkerAtPoint = (x: number, y: number) => {
-    const clickThreshold = 10; // Reduced from 15 to 10
+    const clickThreshold = 10;
+
+    // First convert screen coordinates back to original coordinates
+    // if the image is zoomed or panned
+    let adjustedX = x;
+    let adjustedY = y;
+
+    if (isZoomed) {
+      // Account for current scale and translation
+      const centerX = width / 2;
+      const centerY = height / 2;
+
+      // Reverse the transformations
+      adjustedX =
+        (x - lastTranslateX.current - centerX) / baseScale.current + centerX;
+      adjustedY =
+        (y - lastTranslateY.current - centerY) / baseScale.current + centerY;
+    }
 
     return markerPoints.find(
       (marker) =>
         marker.viewIndex === currentViewIndex &&
-        Math.abs(marker.x - x) < clickThreshold &&
-        Math.abs(marker.y - y) < clickThreshold
+        Math.abs(marker.x - adjustedX) < clickThreshold &&
+        Math.abs(marker.y - adjustedY) < clickThreshold
     );
   };
 
@@ -654,20 +720,34 @@ export default function ScanView({ views }: ScanViewProps) {
 
   // Add a function to filter issues based on search query
   const getFilteredCategories = () => {
-    if (!searchQuery.trim()) {
-      return ISSUE_CATEGORIES;
+    // Find the selected category
+    const selectedCategory = ISSUE_CATEGORIES.find(
+      (category) => category.id === activeTab
+    );
+
+    if (!selectedCategory) {
+      return [];
     }
 
-    const query = searchQuery.toLowerCase();
+    let categories = [...selectedCategory.items];
 
-    return ISSUE_CATEGORIES.map((category) => ({
-      ...category,
-      issues: category.issues.filter(
-        (issue) =>
-          issue.toLowerCase().includes(query) ||
-          category.name.toLowerCase().includes(query)
-      ),
-    })).filter((category) => category.issues.length > 0);
+    // Apply search filter if search query exists
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+
+      return categories
+        .map((category) => ({
+          ...category,
+          issues: category.issues.filter(
+            (issue) =>
+              issue.toLowerCase().includes(query) ||
+              category.name.toLowerCase().includes(query)
+          ),
+        }))
+        .filter((category) => category.issues.length > 0);
+    }
+
+    return categories;
   };
 
   // Add this function to count and sort issues
@@ -1065,6 +1145,36 @@ export default function ScanView({ views }: ScanViewProps) {
                 clearButtonMode="while-editing"
               />
             </View>
+
+            {/* Add this inside your render before the ScrollView */}
+            <View style={styles.tabContainer}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.tabScroll}
+              >
+                {ISSUE_CATEGORIES.map((type) => (
+                  <TouchableOpacity
+                    key={type.id}
+                    style={[
+                      styles.tabButton,
+                      activeTab === type.id && styles.activeTabButton,
+                    ]}
+                    onPress={() => setActiveTab(type.id)}
+                  >
+                    <Text
+                      style={[
+                        styles.tabButtonText,
+                        activeTab === type.id && styles.activeTabButtonText,
+                      ]}
+                    >
+                      {type.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+
             <ScrollView style={styles.issueListContainer}>
               <View style={styles.issueCategoriesContainer}>
                 {getFilteredCategories().map((category, catIndex) => (
@@ -1159,6 +1269,7 @@ const styles = StyleSheet.create({
   scanView: {
     flex: 1,
     backgroundColor: '#fff',
+    marginTop: 90,
   },
   blueprintContainer: {
     flex: 1,
@@ -1732,5 +1843,29 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: 'bold',
     color: '#333',
+  },
+  tabContainer: {
+    marginBottom: 10,
+  },
+  tabScroll: {
+    paddingBottom: 8,
+  },
+  tabButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginRight: 8,
+    borderRadius: 20,
+    backgroundColor: '#f0f0f0',
+  },
+  activeTabButton: {
+    backgroundColor: '#0066cc',
+  },
+  tabButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#666',
+  },
+  activeTabButtonText: {
+    color: '#fff',
   },
 });

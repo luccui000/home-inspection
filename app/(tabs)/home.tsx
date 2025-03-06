@@ -37,10 +37,17 @@ export default function HomeTab() {
 
 const styles = StyleSheet.create({
   container: {
-    display: 'flex',
     flex: 1,
+    position: 'relative',
+  },
+  header: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
   },
   scanView: {
-    padding: 10,
+    flex: 1,
   },
 });
