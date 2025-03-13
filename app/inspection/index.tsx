@@ -467,6 +467,9 @@ export default function InspectionScreen() {
   const [overviewPhotos, setOverviewPhotos] = useState<string[]>([]);
   const [isPhotoGalleryVisible, setIsPhotoGalleryVisible] = useState(false);
   const [selectedPhotos, setSelectedPhotos] = useState<string[]>([]);
+  const [pinnedIcons, setPinnedIcons] = useState([]);
+  const [selectedShape, setSelectedShape] = useState(null);
+  const blueprintRef = useRef(null);
 
   const bottomSheetAnimation = useRef(new Animated.Value(0)).current;
   const photoGalleryAnimation = useRef(new Animated.Value(0)).current;
@@ -524,14 +527,42 @@ export default function InspectionScreen() {
   }, [selectedDirection, selectedPart, selectedDetails]);
 
   // Xử lý khi đánh dấu hoàn thành một hạng mục
-  const markItemAsCompleted = async (itemId: number) => {
-    const updatedChecklist = checklist.map((item) => {
-      if (item.id === itemId) {
-        return { ...item, status: 'completed' };
-      }
-      return item;
-    });
-    setChecklist(updatedChecklist);
+  const handlePlaceIcon = (event) => {
+    if (!selectedShape) return;
+
+    // Prevent event bubbling
+    event.stopPropagation();
+
+    // Get touch location
+    const { locationX, locationY } = event.nativeEvent;
+
+    console.log('Placing icon at:', locationX, locationY);
+
+    // Add the icon to the pinnedIcons array
+    setPinnedIcons([
+      ...pinnedIcons,
+      {
+        id: Date.now().toString(),
+        shape: selectedShape.shape,
+        color: selectedShape.color,
+        x: locationX,
+        y: locationY,
+        direction: selectedDirection,
+      },
+    ]);
+
+    // Reset the selected shape after placing
+    setSelectedShape(null);
+  };
+
+  // Function to remove a pinned icon
+  const removePinnedIcon = (iconId) => {
+    setPinnedIcons(pinnedIcons.filter((icon) => icon.id !== iconId));
+  };
+
+  // Function to select a shape to be placed
+  const selectShape = (shape, color) => {
+    setSelectedShape({ shape, color });
   };
 
   const toggleItemCompletion = async (itemId: number) => {
@@ -1083,12 +1114,79 @@ export default function InspectionScreen() {
         </ScrollView>
       </View>
       {/* Blueprint */}
-      <View style={styles.blueprintContainer}>
+      <View
+        style={styles.blueprintContainer}
+        ref={blueprintRef}
+        onTouchEnd={handlePlaceIcon}
+        onStartShouldSetResponder={() => true}
+      >
         <Image
           source={getBlueprintSource(selectedDirection)}
           style={styles.blueprint}
           resizeMode="contain"
         />
+
+        {/* Display cursor indicator when a shape is selected */}
+        {selectedShape && (
+          <View style={styles.blueprintHelpText}>
+            <Text style={styles.blueprintHelpTextContent}>
+              Chọn vị trí để đặt ký hiệu
+            </Text>
+          </View>
+        )}
+
+        {/* Show pinned icons for current direction */}
+        {pinnedIcons
+          .filter((icon) => icon.direction === selectedDirection)
+          .map((icon) => (
+            <TouchableOpacity
+              key={icon.id}
+              style={[
+                styles.pinnedIcon,
+                {
+                  left: icon.x - 12,
+                  top: icon.y - 12,
+                },
+              ]}
+              onPress={() => removePinnedIcon(icon.id)}
+            >
+              {icon.shape === 'circle' && (
+                <View
+                  style={[styles.pinnedCircle, { backgroundColor: icon.color }]}
+                />
+              )}
+              {icon.shape === 'triangle' && (
+                <View style={styles.triangleContainer}>
+                  <View
+                    style={[
+                      styles.pinnedTriangle,
+                      {
+                        borderBottomColor: icon.color,
+                        borderBottomWidth: 16,
+                        borderLeftWidth: 8,
+                        borderRightWidth: 8,
+                      },
+                    ]}
+                  />
+                </View>
+              )}
+              {icon.shape === 'square' && (
+                <View
+                  style={[styles.pinnedSquare, { backgroundColor: icon.color }]}
+                />
+              )}
+              {icon.shape === 'diamond' && (
+                <View style={styles.diamondContainer}>
+                  <View
+                    style={[
+                      styles.pinnedDiamond,
+                      { backgroundColor: icon.color },
+                    ]}
+                  />
+                </View>
+              )}
+            </TouchableOpacity>
+          ))}
 
         {/* Camera button - always visible */}
         {!hasPhoto && (
@@ -1123,6 +1221,85 @@ export default function InspectionScreen() {
             </TouchableOpacity>
           </>
         )}
+      </View>
+      <View style={styles.shapesToolbar}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.shapesContainer}
+        >
+          <TouchableOpacity
+            style={[
+              styles.shapeButton,
+              selectedShape &&
+                selectedShape.shape === 'circle' &&
+                selectedShape.color === '#ef4444' &&
+                styles.selectedShapeButton,
+            ]}
+            onPress={() => selectShape('circle', '#ef4444')}
+          >
+            <View
+              style={[styles.circleShape, { backgroundColor: '#ef4444' }]}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.shapeButton,
+              selectedShape &&
+                selectedShape.shape === 'triangle' &&
+                selectedShape.color === '#f59e0b' &&
+                styles.selectedShapeButton,
+            ]}
+            onPress={() => selectShape('triangle', '#f59e0b')}
+          >
+            <View style={styles.triangleContainer}>
+              <View
+                style={[
+                  styles.triangleShape,
+                  {
+                    borderBottomColor: '#f59e0b',
+                    borderBottomWidth: 16,
+                    borderLeftWidth: 8,
+                    borderRightWidth: 8,
+                  },
+                ]}
+              />
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.shapeButton,
+              selectedShape &&
+                selectedShape.shape === 'square' &&
+                selectedShape.color === '#10b981' &&
+                styles.selectedShapeButton,
+            ]}
+            onPress={() => selectShape('square', '#10b981')}
+          >
+            <View
+              style={[styles.squareShape, { backgroundColor: '#10b981' }]}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.shapeButton,
+              selectedShape &&
+                selectedShape.shape === 'diamond' &&
+                selectedShape.color === '#3b82f6' &&
+                styles.selectedShapeButton,
+            ]}
+            onPress={() => selectShape('diamond', '#3b82f6')}
+          >
+            <View style={styles.diamondContainer}>
+              <View
+                style={[styles.diamondShape, { backgroundColor: '#3b82f6' }]}
+              />
+            </View>
+          </TouchableOpacity>
+        </ScrollView>
       </View>
       {/* Checklist */}
       <View style={styles.checklistContainer}>
@@ -1371,7 +1548,6 @@ export default function InspectionScreen() {
           </Pressable>
         </KeyboardAvoidingView>
       </Modal>
-
       {/* Add this Photo Gallery Modal after the Issue Modal */}
       <Modal
         animationType="none"
@@ -1634,6 +1810,8 @@ const styles = StyleSheet.create({
   },
   checklistContainer: {
     flex: 1,
+    justifyContent: 'center',
+    alignContent: 'center',
     paddingHorizontal: 16,
   },
   checklist: {
@@ -1967,5 +2145,156 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 16,
     color: '#94a3b8',
+  },
+  shapesToolbar: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    display: 'flex',
+  },
+  shapesTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#64748b',
+    marginBottom: 8,
+  },
+  shapesContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  shapeButton: {
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  selectedShapeButton: {
+    backgroundColor: '#e2e8f0',
+    borderRadius: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+  },
+  pinnedIcon: {
+    position: 'absolute',
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  pinnedCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: 'white',
+  },
+  pinnedTriangle: {
+    width: 0,
+    height: 0,
+    backgroundColor: 'transparent',
+    borderStyle: 'solid',
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+  },
+  pinnedSquare: {
+    width: 24,
+    height: 24,
+    borderWidth: 2,
+    borderColor: 'white',
+  },
+  pinnedDiamond: {
+    width: 16,
+    height: 16,
+    transform: [{ rotate: '45deg' }],
+    borderWidth: 2,
+    borderColor: 'white',
+  },
+  blueprintHelpText: {
+    position: 'absolute',
+    top: 10,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  blueprintHelpTextContent: {
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    color: 'white',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  shapeText: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 4,
+  },
+  circleShape: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+  },
+  triangleContainer: {
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  squareShape: {
+    width: 24,
+    height: 24,
+  },
+  diamondContainer: {
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  diamondShape: {
+    width: 16,
+    height: 16,
+    transform: [{ rotate: '45deg' }],
+  },
+  pinnedIconContainer: {
+    zIndex: 10,
+  },
+  pinnedCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: 'white',
+  },
+  pinnedTriangle: {
+    width: 0,
+    height: 0,
+    backgroundColor: 'transparent',
+    borderStyle: 'solid',
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderBottomWidth: 20,
+    borderLeftWidth: 10,
+    borderRightWidth: 10,
+    borderWidth: 2,
+    borderColor: 'white',
+  },
+  pinnedSquare: {
+    width: 24,
+    height: 24,
+    borderWidth: 2,
+    borderColor: 'white',
+  },
+  pinnedDiamond: {
+    width: 16,
+    height: 16,
+    transform: [{ rotate: '45deg' }],
+    borderWidth: 2,
+    borderColor: 'white',
+  },
+  draggedIcon: {
+    position: 'absolute',
+    zIndex: 9999,
+    opacity: 0.8,
   },
 });
