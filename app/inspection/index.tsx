@@ -332,7 +332,7 @@ export default function InspectionScreen() {
 
       {/* Direction Selector */}
       <View style={styles.directionContainer}>
-        <Text style={styles.sectionTitle}>Chọn hướng:</Text>
+        {/* <Text style={styles.sectionTitle}>Chọn hướng:</Text> */}
         <View style={styles.directionButtons}>
           {DIRECTIONS.map((direction) => (
             <TouchableOpacity
@@ -363,23 +363,9 @@ export default function InspectionScreen() {
         </View>
       </View>
 
-      {/* Blueprint */}
-      <View style={styles.blueprintContainer}>
-        <Image
-          source={getBlueprintSource(selectedDirection)}
-          style={styles.blueprint}
-          resizeMode="contain"
-        />
-      </View>
-
-      <TouchableOpacity style={styles.allOkButton}>
-        <Ionicons name="checkmark-circle" size={24} color="white" />
-        <Text style={styles.allOkText}>Tất cả OK</Text>
-      </TouchableOpacity>
-
       {/* House Parts Selector */}
       <View style={styles.selectorContainer}>
-        <Text style={styles.sectionTitle}>Phần kiểm tra:</Text>
+        {/* <Text style={styles.sectionTitle}>Phần kiểm tra:</Text> */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <TouchableOpacity
             style={[
@@ -432,7 +418,7 @@ export default function InspectionScreen() {
 
       {/* Detail Types */}
       <View style={styles.selectorContainer}>
-        <Text style={styles.sectionTitle}>Chi tiết kiểm tra:</Text>
+        {/* <Text style={styles.sectionTitle}>Chi tiết kiểm tra:</Text> */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           {DETAIL_TYPES.map((detail) => (
             <TouchableOpacity
@@ -464,6 +450,20 @@ export default function InspectionScreen() {
           ))}
         </ScrollView>
       </View>
+
+      {/* Blueprint */}
+      <View style={styles.blueprintContainer}>
+        <Image
+          source={getBlueprintSource(selectedDirection)}
+          style={styles.blueprint}
+          resizeMode="contain"
+        />
+      </View>
+
+      <TouchableOpacity style={styles.allOkButton}>
+        <Ionicons name="checkmark-circle" size={24} color="white" />
+        <Text style={styles.allOkText}>Tất cả OK</Text>
+      </TouchableOpacity>
 
       {/* Checklist */}
       <View style={styles.checklistContainer}>
