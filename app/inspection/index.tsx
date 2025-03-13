@@ -785,6 +785,36 @@ export default function InspectionScreen() {
     setChecklist(updatedChecklist);
   };
 
+  const groupChecklistByDetailType = () => {
+    // If no specific details selected, still group by detail type
+    if (selectedDetails.length === 0) {
+      // Group by detail type even when none are specifically selected
+      return filteredChecklist.reduce((groups, item) => {
+        const detailType = item.detail;
+        if (!groups[detailType]) {
+          groups[detailType] = [];
+        }
+        groups[detailType].push(item);
+        return groups;
+      }, {});
+    }
+
+    // Group by detail type (existing behavior when filters are active)
+    return filteredChecklist.reduce((groups, item) => {
+      const detailType = item.detail;
+      if (!groups[detailType]) {
+        groups[detailType] = [];
+      }
+      groups[detailType].push(item);
+      return groups;
+    }, {});
+  };
+
+  const getDetailName = (detailId) => {
+    const detail = DETAIL_TYPES.find((d) => d.id === detailId);
+    return detail ? detail.name : detailId;
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
@@ -979,62 +1009,104 @@ export default function InspectionScreen() {
       {/* Checklist */}
       <View style={styles.checklistContainer}>
         <Text style={styles.sectionTitle}>Danh sách kiểm tra:</Text>
+
         <ScrollView style={styles.checklist}>
-          {filteredChecklist.map((item) => (
-            <View key={item.id} style={styles.checklistItem}>
-              <View style={styles.checklistHeader}>
-                {/* Shape Icon based on item type */}
-                <ShapeIcon
-                  {...getItemIconConfig(item.part, item.detail)}
-                  size={18}
-                />
+          {Object.entries(groupChecklistByDetailType()).map(
+            ([detailType, items]) => {
+              const completedCount = items.filter(
+                (item) => item.status === 'completed'
+              ).length;
 
-                <Text style={styles.checklistText}>{item.name}</Text>
+              return (
+                <View key={detailType} style={styles.checklistGroup}>
+                  {/* Always show section subtitle, remove the check for 'all' */}
+                  <View style={styles.checklistSubtitleContainer}>
+                    <MaterialCommunityIcons
+                      name={
+                        DETAIL_TYPES.find((d) => d.id === detailType)?.icon ||
+                        'circle'
+                      }
+                      size={16}
+                      color="#64748b"
+                      style={{ marginRight: 6 }}
+                    />
+                    <Text style={styles.checklistSubtitle}>
+                      {getDetailName(detailType)}
+                    </Text>
 
-                {item.photos.length > 0 && (
-                  <TouchableOpacity style={styles.photoIndicator}>
-                    <Ionicons name="images-outline" size={20} color="#2563eb" />
-                    <Text style={styles.photoCount}>{item.photos.length}</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
+                    <View style={styles.completionCountContainer}>
+                      <Text style={styles.completionCount}>
+                        {completedCount}/{items.length}
+                      </Text>
+                    </View>
+                  </View>
 
-              <View style={styles.checklistActions}>
-                {/* Rest of your buttons (check, camera, issue) remain unchanged */}
-                <TouchableOpacity
-                  style={[
-                    styles.actionButton,
-                    item.status === 'completed'
-                      ? styles.activeCheckButton
-                      : styles.checkButton,
-                  ]}
-                  onPress={() => toggleItemCompletion(item.id)}
-                >
-                  <Ionicons name="checkmark" size={20} color="white" />
-                </TouchableOpacity>
+                  {/* Render items in this group */}
+                  {items.map((item) => (
+                    <View key={item.id} style={styles.checklistItem}>
+                      <View style={styles.checklistHeader}>
+                        <ShapeIcon
+                          {...getItemIconConfig(item.part, item.detail)}
+                          size={18}
+                        />
 
-                {/* Show camera button only when item is checked */}
-                {item.status === 'completed' && (
-                  <TouchableOpacity
-                    style={[styles.actionButton, styles.photoButton]}
-                    onPress={() => takePicture(item.id)}
-                  >
-                    <Ionicons name="camera" size={20} color="white" />
-                  </TouchableOpacity>
-                )}
+                        <Text style={styles.checklistText}>{item.name}</Text>
 
-                {/* Show issue button (X) only when item is not checked */}
-                {item.status !== 'completed' && (
-                  <TouchableOpacity
-                    style={[styles.actionButton, styles.issueButton]}
-                    onPress={() => openIssueModal(item)}
-                  >
-                    <Ionicons name="close" size={20} color="white" />
-                  </TouchableOpacity>
-                )}
-              </View>
-            </View>
-          ))}
+                        {item.photos.length > 0 && (
+                          <TouchableOpacity
+                            style={styles.photoIndicator}
+                            onPress={() => openPhotoGallery(item.photos)}
+                          >
+                            <Ionicons
+                              name="images-outline"
+                              size={20}
+                              color="#2563eb"
+                            />
+                            <Text style={styles.photoCount}>
+                              {item.photos.length}
+                            </Text>
+                          </TouchableOpacity>
+                        )}
+                      </View>
+
+                      <View style={styles.checklistActions}>
+                        {/* Action buttons remain unchanged */}
+                        <TouchableOpacity
+                          style={[
+                            styles.actionButton,
+                            item.status === 'completed'
+                              ? styles.activeCheckButton
+                              : styles.checkButton,
+                          ]}
+                          onPress={() => toggleItemCompletion(item.id)}
+                        >
+                          <Ionicons name="checkmark" size={20} color="white" />
+                        </TouchableOpacity>
+
+                        {item.status === 'completed' && (
+                          <TouchableOpacity
+                            style={[styles.actionButton, styles.photoButton]}
+                            onPress={() => takePicture(item.id)}
+                          >
+                            <Ionicons name="camera" size={20} color="white" />
+                          </TouchableOpacity>
+                        )}
+
+                        {item.status !== 'completed' && (
+                          <TouchableOpacity
+                            style={[styles.actionButton, styles.issueButton]}
+                            onPress={() => openIssueModal(item)}
+                          >
+                            <Ionicons name="close" size={20} color="white" />
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                    </View>
+                  ))}
+                </View>
+              );
+            }
+          )}
         </ScrollView>
       </View>
 
@@ -1323,6 +1395,33 @@ const styles = StyleSheet.create({
   },
   checklist: {
     flex: 1,
+  },
+  checklistGroup: {
+    marginBottom: 16,
+  },
+  checklistSubtitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between', // Changed to space-between for layout
+    marginBottom: 8,
+    paddingHorizontal: 4,
+  },
+  checklistSubtitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#64748b',
+    flex: 1, // Allow text to take available space
+  },
+  completionCountContainer: {
+    backgroundColor: '#f1f5f9',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  completionCount: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#64748b',
   },
   checklistItem: {
     backgroundColor: 'white',
