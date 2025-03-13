@@ -1,10 +1,4 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  SafeAreaView,
-} from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -12,7 +6,7 @@ export default function Home() {
   const router = useRouter();
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <Text style={styles.title}>Home Inspection</Text>
 
       <View style={styles.projectList}>
@@ -47,15 +41,17 @@ export default function Home() {
         <Ionicons name="add-circle" size={24} color="white" />
         <Text style={styles.addButtonText}>Thêm dự án mới</Text>
       </TouchableOpacity>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#fff',
+    paddingTop: 50,
+    paddingHorizontal: 20,
+    paddingBottom: 10,
   },
   title: {
     fontSize: 24,
@@ -100,7 +96,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#2563eb',
     padding: 16,
     borderRadius: 12,
-    marginTop: 16,
+    marginTop: 20,
   },
   addButtonText: {
     color: 'white',

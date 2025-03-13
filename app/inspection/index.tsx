@@ -13,7 +13,7 @@ import {
   Pressable,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useNavigation, useRouter } from 'expo-router';
+import { Link, useNavigation, useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import northBlueprint from '../../assets/images/north-blueprint.jpg';
@@ -39,6 +39,11 @@ interface Direction {
   icon: string;
 }
 
+interface IconConfig {
+  shape: 'circle' | 'square' | 'triangle' | 'diamond';
+  color: string;
+}
+
 // Dữ liệu mẫu
 const HOUSE_PARTS: HousePart[] = [
   { id: 'roof', name: 'Mái trên', icon: 'home-roof' },
@@ -62,84 +67,371 @@ const DIRECTIONS = [
 ];
 
 // Dữ liệu mẫu cho checklist
-const CHECKLIST_ITEMS = [
+const CHECKLIST_ITEMS: ChecklistItem[] = [
+  // NORTH direction items (10 items)
   {
     id: 1,
-    name: 'Kiểm tra độ bám dính của lớp sơn',
+    name: 'Kiểm tra độ bám dính của lớp sơn mặt Bắc',
     part: 'walls',
     detail: 'paint',
+    direction: 'north',
     status: 'pending',
     photos: [],
   },
   {
     id: 2,
-    name: 'Kiểm tra độ đồng đều của màu sơn',
+    name: 'Kiểm tra dấu hiệu nấm mốc trên tường',
     part: 'walls',
-    detail: 'paint',
+    detail: 'material',
+    direction: 'north',
     status: 'pending',
     photos: [],
   },
   {
     id: 3,
-    name: 'Kiểm tra vết nứt trên tường',
+    name: 'Kiểm tra cửa sổ mặt Bắc có bị rò rỉ không',
     part: 'walls',
-    detail: 'material',
+    detail: 'window',
+    direction: 'north',
     status: 'pending',
     photos: [],
   },
   {
     id: 4,
-    name: 'Kiểm tra độ thẳng của tường',
+    name: 'Kiểm tra độ kín của cửa chính',
     part: 'walls',
-    detail: 'structure',
+    detail: 'door',
+    direction: 'north',
     status: 'pending',
     photos: [],
   },
   {
     id: 5,
-    name: 'Kiểm tra tình trạng ngói mái',
+    name: 'Kiểm tra hệ thống thoát nước mái phía Bắc',
     part: 'roof',
-    detail: 'material',
+    detail: 'structure',
+    direction: 'north',
     status: 'pending',
     photos: [],
   },
   {
     id: 6,
-    name: 'Kiểm tra hệ thống thoát nước mái',
-    part: 'roof',
+    name: 'Kiểm tra độ chắc chắn của móng phía Bắc',
+    part: 'foundation',
     detail: 'structure',
+    direction: 'north',
     status: 'pending',
     photos: [],
   },
   {
     id: 7,
-    name: 'Kiểm tra độ phẳng của nền',
-    part: 'foundation',
+    name: 'Kiểm tra vết nứt trên tường phía Bắc',
+    part: 'walls',
     detail: 'structure',
+    direction: 'north',
     status: 'pending',
     photos: [],
   },
   {
     id: 8,
-    name: 'Kiểm tra vết nứt trên nền',
-    part: 'foundation',
+    name: 'Kiểm tra độ ẩm của tường phía Bắc',
+    part: 'walls',
     detail: 'material',
+    direction: 'north',
     status: 'pending',
     photos: [],
   },
   {
     id: 9,
-    name: 'Kiểm tra khung cửa sổ',
-    part: 'walls',
-    detail: 'window',
+    name: 'Kiểm tra trạng thái ngói mái phía Bắc',
+    part: 'roof',
+    detail: 'material',
+    direction: 'north',
     status: 'pending',
     photos: [],
   },
   {
     id: 10,
-    name: 'Kiểm tra khung cửa ra vào',
+    name: 'Kiểm tra hệ thống cách nhiệt mặt Bắc',
+    part: 'walls',
+    detail: 'structure',
+    direction: 'north',
+    status: 'pending',
+    photos: [],
+  },
+
+  // EAST direction items (10 items)
+  {
+    id: 11,
+    name: 'Kiểm tra độ phai màu sơn mặt Đông',
+    part: 'walls',
+    detail: 'paint',
+    direction: 'east',
+    status: 'pending',
+    photos: [],
+  },
+  {
+    id: 12,
+    name: 'Kiểm tra kính cửa sổ phía Đông',
+    part: 'walls',
+    detail: 'window',
+    direction: 'east',
+    status: 'pending',
+    photos: [],
+  },
+  {
+    id: 13,
+    name: 'Kiểm tra độ chắc chắn của cửa phía Đông',
     part: 'walls',
     detail: 'door',
+    direction: 'east',
+    status: 'pending',
+    photos: [],
+  },
+  {
+    id: 14,
+    name: 'Kiểm tra vết nứt trên móng phía Đông',
+    part: 'foundation',
+    detail: 'structure',
+    direction: 'east',
+    status: 'pending',
+    photos: [],
+  },
+  {
+    id: 15,
+    name: 'Kiểm tra tình trạng mái hiên phía Đông',
+    part: 'roof',
+    detail: 'structure',
+    direction: 'east',
+    status: 'pending',
+    photos: [],
+  },
+  {
+    id: 16,
+    name: 'Kiểm tra đường ống thoát nước mưa',
+    part: 'walls',
+    detail: 'material',
+    direction: 'east',
+    status: 'pending',
+    photos: [],
+  },
+  {
+    id: 17,
+    name: 'Kiểm tra tình trạng ngói mái phía Đông',
+    part: 'roof',
+    detail: 'material',
+    direction: 'east',
+    status: 'pending',
+    photos: [],
+  },
+  {
+    id: 18,
+    name: 'Kiểm tra các mối nối trên tường Đông',
+    part: 'walls',
+    detail: 'structure',
+    direction: 'east',
+    status: 'pending',
+    photos: [],
+  },
+  {
+    id: 19,
+    name: 'Kiểm tra độ thẳng của tường phía Đông',
+    part: 'walls',
+    detail: 'structure',
+    direction: 'east',
+    status: 'pending',
+    photos: [],
+  },
+  {
+    id: 20,
+    name: 'Kiểm tra hệ thống chống thấm phía Đông',
+    part: 'foundation',
+    detail: 'material',
+    direction: 'east',
+    status: 'pending',
+    photos: [],
+  },
+
+  // SOUTH direction items (10 items)
+  {
+    id: 21,
+    name: 'Kiểm tra độ bong tróc của sơn mặt Nam',
+    part: 'walls',
+    detail: 'paint',
+    direction: 'south',
+    status: 'pending',
+    photos: [],
+  },
+  {
+    id: 22,
+    name: 'Kiểm tra hệ thống che nắng cửa sổ',
+    part: 'walls',
+    detail: 'window',
+    direction: 'south',
+    status: 'pending',
+    photos: [],
+  },
+  {
+    id: 23,
+    name: 'Kiểm tra độ cách nhiệt của cửa mặt Nam',
+    part: 'walls',
+    detail: 'door',
+    direction: 'south',
+    status: 'pending',
+    photos: [],
+  },
+  {
+    id: 24,
+    name: 'Kiểm tra hiện tượng co ngót của móng',
+    part: 'foundation',
+    detail: 'structure',
+    direction: 'south',
+    status: 'pending',
+    photos: [],
+  },
+  {
+    id: 25,
+    name: 'Kiểm tra độ cách nhiệt của mái Nam',
+    part: 'roof',
+    detail: 'material',
+    direction: 'south',
+    status: 'pending',
+    photos: [],
+  },
+  {
+    id: 26,
+    name: 'Kiểm tra tình trạng của cửa ra ban công',
+    part: 'walls',
+    detail: 'door',
+    direction: 'south',
+    status: 'pending',
+    photos: [],
+  },
+  {
+    id: 27,
+    name: 'Kiểm tra chất lượng gạch ốp tường',
+    part: 'walls',
+    detail: 'material',
+    direction: 'south',
+    status: 'pending',
+    photos: [],
+  },
+  {
+    id: 28,
+    name: 'Kiểm tra khả năng thoát nước của mái',
+    part: 'roof',
+    detail: 'structure',
+    direction: 'south',
+    status: 'pending',
+    photos: [],
+  },
+  {
+    id: 29,
+    name: 'Kiểm tra độ lún của nền phía Nam',
+    part: 'foundation',
+    detail: 'structure',
+    direction: 'south',
+    status: 'pending',
+    photos: [],
+  },
+  {
+    id: 30,
+    name: 'Kiểm tra nước đọng quanh móng nhà',
+    part: 'foundation',
+    detail: 'material',
+    direction: 'south',
+    status: 'pending',
+    photos: [],
+  },
+
+  // WEST direction items (10 items)
+  {
+    id: 31,
+    name: 'Kiểm tra khả năng chống nóng của sơn',
+    part: 'walls',
+    detail: 'paint',
+    direction: 'west',
+    status: 'pending',
+    photos: [],
+  },
+  {
+    id: 32,
+    name: 'Kiểm tra độ kín của cửa sổ chịu mưa',
+    part: 'walls',
+    detail: 'window',
+    direction: 'west',
+    status: 'pending',
+    photos: [],
+  },
+  {
+    id: 33,
+    name: 'Kiểm tra gioăng cao su của cửa phía Tây',
+    part: 'walls',
+    detail: 'door',
+    direction: 'west',
+    status: 'pending',
+    photos: [],
+  },
+  {
+    id: 34,
+    name: 'Kiểm tra thoát nước quanh móng phía Tây',
+    part: 'foundation',
+    detail: 'structure',
+    direction: 'west',
+    status: 'pending',
+    photos: [],
+  },
+  {
+    id: 35,
+    name: 'Kiểm tra độ bền của vật liệu mái Tây',
+    part: 'roof',
+    detail: 'material',
+    direction: 'west',
+    status: 'pending',
+    photos: [],
+  },
+  {
+    id: 36,
+    name: 'Kiểm tra khả năng chống thấm của tường',
+    part: 'walls',
+    detail: 'material',
+    direction: 'west',
+    status: 'pending',
+    photos: [],
+  },
+  {
+    id: 37,
+    name: 'Kiểm tra hệ thống thoát nước mái phía Tây',
+    part: 'roof',
+    detail: 'structure',
+    direction: 'west',
+    status: 'pending',
+    photos: [],
+  },
+  {
+    id: 38,
+    name: 'Kiểm tra cây cối ảnh hưởng đến móng',
+    part: 'foundation',
+    detail: 'material',
+    direction: 'west',
+    status: 'pending',
+    photos: [],
+  },
+  {
+    id: 39,
+    name: 'Kiểm tra vết nứt do co giãn nhiệt',
+    part: 'walls',
+    detail: 'structure',
+    direction: 'west',
+    status: 'pending',
+    photos: [],
+  },
+  {
+    id: 40,
+    name: 'Kiểm tra hệ thống chống sét trên mái',
+    part: 'roof',
+    detail: 'structure',
+    direction: 'west',
     status: 'pending',
     photos: [],
   },
@@ -150,6 +442,7 @@ interface ChecklistItem {
   name: string;
   part: string;
   detail: string;
+  direction: string; // Added direction field
   status: 'pending' | 'completed' | 'issue';
   photos: string[];
   note?: string;
@@ -165,6 +458,7 @@ export default function InspectionScreen() {
   const [issueModalVisible, setIssueModalVisible] = useState(false);
   const [currentItem, setCurrentItem] = useState(null);
   const [note, setNote] = useState('');
+  const [isInCameraMode, setIsInCameraMode] = useState(false);
 
   const bottomSheetAnimation = useRef(new Animated.Value(0)).current;
 
@@ -183,12 +477,18 @@ export default function InspectionScreen() {
   const totalItems = checklist.length;
   const progress = Math.round((completedItems / totalItems) * 100);
 
-  // Lọc checklist dựa trên phần và chi tiết đã chọn
+  // Update the filteredChecklist function
   const filteredChecklist = checklist.filter((item) => {
-    if (!selectedPart && selectedDetails.length === 0) return true;
+    // First filter by direction
+    if (item.direction !== selectedDirection) return false;
+
+    // Then filter by part if selected
     if (selectedPart && item.part !== selectedPart) return false;
+
+    // Finally filter by detail types if any are selected
     if (selectedDetails.length > 0 && !selectedDetails.includes(item.detail))
       return false;
+
     return true;
   });
 
@@ -201,8 +501,21 @@ export default function InspectionScreen() {
     }
   };
 
+  useEffect(() => {
+    console.log('Current filters:');
+    console.log('Direction:', selectedDirection);
+    console.log('Part:', selectedPart);
+    console.log('Details:', selectedDetails);
+    console.log('Filtered items:', filteredChecklist.length);
+
+    // Log a sample item to verify its structure
+    if (checklist.length > 0) {
+      console.log('Sample item structure:', checklist[0]);
+    }
+  }, [selectedDirection, selectedPart, selectedDetails]);
+
   // Xử lý khi đánh dấu hoàn thành một hạng mục
-  const markItemAsCompleted = async (itemId: string) => {
+  const markItemAsCompleted = async (itemId: number) => {
     const updatedChecklist = checklist.map((item) => {
       if (item.id === itemId) {
         return { ...item, status: 'completed' };
@@ -222,6 +535,38 @@ export default function InspectionScreen() {
       return item;
     });
     setChecklist(updatedChecklist);
+  };
+
+  // Add a function to toggle camera mode
+  const toggleCameraMode = async () => {
+    if (isInCameraMode) {
+      // If we're already in camera mode, take a picture of the whole area
+      const permissionResult =
+        await ImagePicker.requestCameraPermissionsAsync();
+
+      if (permissionResult.granted === false) {
+        alert('Bạn cần cấp quyền truy cập máy ảnh!');
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+
+      if (!result.canceled) {
+        // Here you could save the photo as an overall documentation for this view
+        console.log('Overall photo taken:', result.assets[0].uri);
+
+        // Mark all visible items as completed after taking the photo
+        markAllAsCompleted();
+      }
+    }
+
+    // Toggle the camera mode
+    setIsInCameraMode(!isInCameraMode);
   };
 
   // Xử lý khi mở modal báo lỗi
@@ -302,15 +647,157 @@ export default function InspectionScreen() {
     }
   };
 
+  // Add this after your existing interfaces
+  interface IconConfig {
+    shape: 'circle' | 'square' | 'triangle' | 'diamond';
+    color: string;
+  }
+
+  // Add this mapping function after your existing constants
+  const getItemIconConfig = (part: string, detail: string): IconConfig => {
+    // Map combinations of part and detail to specific icons and colors
+    if (part === 'roof') {
+      if (detail === 'structure')
+        return { shape: 'triangle', color: '#ef4444' }; // Red triangle
+      if (detail === 'material') return { shape: 'square', color: '#f59e0b' }; // Yellow square
+      return { shape: 'circle', color: '#3b82f6' }; // Default blue circle
+    }
+
+    if (part === 'walls') {
+      if (detail === 'paint') return { shape: 'circle', color: '#10b981' }; // Green circle
+      if (detail === 'structure')
+        return { shape: 'triangle', color: '#8b5cf6' }; // Purple triangle
+      if (detail === 'window') return { shape: 'diamond', color: '#0ea5e9' }; // Blue diamond
+      if (detail === 'door') return { shape: 'square', color: '#f97316' }; // Orange square
+      return { shape: 'circle', color: '#3b82f6' }; // Default blue circle
+    }
+
+    if (part === 'foundation') {
+      if (detail === 'structure')
+        return { shape: 'triangle', color: '#ef4444' }; // Red triangle
+      return { shape: 'square', color: '#8b5cf6' }; // Default purple square
+    }
+
+    // Default icon for any other combination
+    return { shape: 'circle', color: '#64748b' }; // Gray circle
+  };
+
+  const ShapeIcon = ({ shape, color, size = 16 }) => {
+    switch (shape) {
+      case 'circle':
+        return (
+          <View
+            style={[
+              styles.shapeIcon,
+              {
+                width: size,
+                height: size,
+                borderRadius: size / 2,
+                backgroundColor: color,
+              },
+            ]}
+          />
+        );
+      case 'square':
+        return (
+          <View
+            style={[
+              styles.shapeIcon,
+              { width: size, height: size, backgroundColor: color },
+            ]}
+          />
+        );
+      case 'triangle':
+        return (
+          <View
+            style={{
+              width: size + styles.shapeIcon.marginRight,
+              height: size,
+              overflow: 'hidden',
+            }}
+          >
+            <View
+              style={[
+                styles.shapeIcon,
+                styles.triangleShape,
+                {
+                  borderBottomColor: color,
+                  borderBottomWidth: size,
+                  borderLeftWidth: size / 2,
+                  borderRightWidth: size / 2,
+                  marginRight: 12,
+                },
+              ]}
+            />
+          </View>
+        );
+      case 'diamond':
+        return (
+          <View
+            style={{
+              width: size,
+              height: size,
+              transform: [{ rotate: '45deg' }],
+              marginRight: styles.shapeIcon.marginRight,
+            }}
+          >
+            <View
+              style={[
+                styles.shapeIcon,
+                {
+                  width: size * 0.7,
+                  height: size * 0.7,
+                  backgroundColor: color,
+                },
+              ]}
+            />
+          </View>
+        );
+      default:
+        return (
+          <View
+            style={[
+              styles.shapeIcon,
+              {
+                width: size,
+                height: size,
+                borderRadius: size / 2,
+                backgroundColor: color,
+              },
+            ]}
+          />
+        );
+    }
+  };
+
+  const markAllAsCompleted = () => {
+    // Get the currently filtered items based on selections
+    const itemsToUpdate = filteredChecklist.map((item) => item.id);
+
+    // Update all those items to completed status
+    const updatedChecklist = checklist.map((item) => {
+      if (itemsToUpdate.includes(item.id)) {
+        return { ...item, status: 'completed' };
+      }
+      return item;
+    });
+
+    setChecklist(updatedChecklist);
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity
+          onPress={() => router.replace('/home')}
+          activeOpacity={0.7}
+        >
           <Ionicons name="arrow-back" size={24} color="#1e293b" />
         </TouchableOpacity>
+
         <Text style={styles.headerTitle}>Kiểm tra dự án</Text>
         <TouchableOpacity>
           <Ionicons name="ellipsis-vertical" size={24} color="#1e293b" />
@@ -346,7 +833,7 @@ export default function InspectionScreen() {
             >
               <MaterialCommunityIcons
                 name={direction.icon}
-                size={24}
+                size={16}
                 color={selectedDirection === direction.id ? 'white' : '#475569'}
               />
               <Text
@@ -376,7 +863,7 @@ export default function InspectionScreen() {
           >
             <Ionicons
               name="apps-outline"
-              size={24}
+              size={16}
               color={selectedPart === '' ? 'white' : '#475569'}
             />
             <Text
@@ -400,7 +887,7 @@ export default function InspectionScreen() {
             >
               <MaterialCommunityIcons
                 name={part.icon}
-                size={24}
+                size={16}
                 color={selectedPart === part.id ? 'white' : '#475569'}
               />
               <Text
@@ -420,7 +907,7 @@ export default function InspectionScreen() {
       <View style={styles.selectorContainer}>
         {/* <Text style={styles.sectionTitle}>Chi tiết kiểm tra:</Text> */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {DETAIL_TYPES.map((detail) => (
+          {DETAIL_TYPES.map((detail: DetailType) => (
             <TouchableOpacity
               key={detail.id}
               style={[
@@ -432,7 +919,7 @@ export default function InspectionScreen() {
             >
               <MaterialCommunityIcons
                 name={detail.icon}
-                size={24}
+                size={16}
                 color={
                   selectedDetails.includes(detail.id) ? 'white' : '#475569'
                 }
@@ -458,12 +945,36 @@ export default function InspectionScreen() {
           style={styles.blueprint}
           resizeMode="contain"
         />
-      </View>
 
-      <TouchableOpacity style={styles.allOkButton}>
-        <Ionicons name="checkmark-circle" size={24} color="white" />
-        <Text style={styles.allOkText}>Tất cả OK</Text>
-      </TouchableOpacity>
+        {/* Primary action button */}
+        {isInCameraMode && (
+          <TouchableOpacity
+            style={styles.allOkButton}
+            onPress={markAllAsCompleted}
+          >
+            <Ionicons name="checkmark-circle" size={16} color="white" />
+            <Text style={styles.allOkText}>Tất cả OK</Text>
+          </TouchableOpacity>
+        )}
+
+        {/* Camera toggle button - always visible */}
+        <TouchableOpacity
+          style={[
+            styles.cameraButton,
+            isInCameraMode && styles.activeCameraButton,
+            // When in camera mode, move to where allOkButton would be since it's now showing
+            isInCameraMode && { right: 5 },
+          ]}
+          onPress={toggleCameraMode}
+        >
+          <Ionicons
+            name={isInCameraMode ? 'checkmark-circle' : 'camera'}
+            size={16}
+            color="white"
+          />
+          {isInCameraMode && <Text style={styles.allOkText}>Chụp ảnh</Text>}
+        </TouchableOpacity>
+      </View>
 
       {/* Checklist */}
       <View style={styles.checklistContainer}>
@@ -472,6 +983,12 @@ export default function InspectionScreen() {
           {filteredChecklist.map((item) => (
             <View key={item.id} style={styles.checklistItem}>
               <View style={styles.checklistHeader}>
+                {/* Shape Icon based on item type */}
+                <ShapeIcon
+                  {...getItemIconConfig(item.part, item.detail)}
+                  size={18}
+                />
+
                 <Text style={styles.checklistText}>{item.name}</Text>
 
                 {item.photos.length > 0 && (
@@ -483,6 +1000,7 @@ export default function InspectionScreen() {
               </View>
 
               <View style={styles.checklistActions}>
+                {/* Rest of your buttons (check, camera, issue) remain unchanged */}
                 <TouchableOpacity
                   style={[
                     styles.actionButton,
@@ -621,7 +1139,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',
-    marginTop: 50,
+    paddingTop: 70,
   },
   header: {
     flexDirection: 'row',
@@ -631,6 +1149,11 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
+    backgroundColor: '#f8fafc', // Match container background
+    zIndex: 999999, // Ensure header is above other content
+  },
+  backButton: {
+    zIndex: 99999999999, // Ensure it's on top of other elements
   },
   headerTitle: {
     fontSize: 18,
@@ -718,8 +1241,8 @@ const styles = StyleSheet.create({
   },
   allOkButton: {
     position: 'absolute',
-    top: 12,
-    right: 12,
+    bottom: 5,
+    right: 5,
     backgroundColor: '#10b981',
     borderRadius: 8,
     paddingHorizontal: 12,
@@ -727,10 +1250,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+
   allOkText: {
     color: 'white',
     fontWeight: '600',
     marginLeft: 4,
+    fontSize: 12,
+  },
+  cameraButton: {
+    position: 'absolute',
+    bottom: 5,
+    right: 90, // Position it to the left of the "Tất cả OK" button
+    backgroundColor: '#6366f1', // Purple color for camera
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  activeCameraButton: {
+    backgroundColor: '#10b981', // Green color when in checkmark mode
   },
   selectorContainer: {
     paddingHorizontal: 16,
@@ -954,5 +1493,16 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: '600',
     fontSize: 16,
+  },
+  shapeIcon: {
+    marginRight: 12,
+  },
+  triangleShape: {
+    width: 0,
+    height: 0,
+    backgroundColor: 'transparent',
+    borderStyle: 'solid',
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
   },
 });
