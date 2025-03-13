@@ -11,6 +11,10 @@ import {
   TextInput,
   Animated,
   Pressable,
+  Keyboard,
+  TouchableWithoutFeedback,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Link, useNavigation, useRouter } from 'expo-router';
@@ -461,8 +465,11 @@ export default function InspectionScreen() {
   const [isInCameraMode, setIsInCameraMode] = useState(false);
   const [hasPhoto, setHasPhoto] = useState(false);
   const [overviewPhotos, setOverviewPhotos] = useState<string[]>([]);
+  const [isPhotoGalleryVisible, setIsPhotoGalleryVisible] = useState(false);
+  const [selectedPhotos, setSelectedPhotos] = useState<string[]>([]);
 
   const bottomSheetAnimation = useRef(new Animated.Value(0)).current;
+  const photoGalleryAnimation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     navigation.setOptions({
@@ -474,7 +481,7 @@ export default function InspectionScreen() {
 
   // Tính toán số lượng hạng mục đã kiểm tra
   const completedItems = checklist.filter(
-    (item) => item.status === 'completed'
+    (item) => item.status === 'completed' || item.status === 'issue'
   ).length;
   const totalItems = checklist.length;
   const progress = Math.round((completedItems / totalItems) * 100);
@@ -539,44 +546,48 @@ export default function InspectionScreen() {
     setChecklist(updatedChecklist);
   };
 
+  const markAllCompleteAndOpenCamera = () => {
+    markAllAsCompleted();
+    openAllOKCamera();
+  };
+
   // Add a function to toggle camera mode
-  const toggleCameraMode = async () => {
+  const openAllOKCamera = async () => {
     // If we're already in camera mode, take a picture
-    if (isInCameraMode) {
-      const permissionResult =
-        await ImagePicker.requestCameraPermissionsAsync();
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
 
-      if (permissionResult.granted === false) {
-        alert('Bạn cần cấp quyền truy cập máy ảnh!');
-        return;
-      }
-
-      const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
-      });
-
-      if (!result.canceled) {
-        // Save the photo and set hasPhoto to true
-        setOverviewPhotos([...overviewPhotos, result.assets[0].uri]);
-        setHasPhoto(true);
-
-        // Keep camera mode on after taking photo
-        // We don't toggle isInCameraMode here anymore
-        return;
-      }
-    } else {
-      // Toggle camera mode on
-      setIsInCameraMode(true);
+    if (permissionResult.granted === false) {
+      alert('Bạn cần cấp quyền truy cập máy ảnh!');
+      return;
     }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      // Save the photo and set hasPhoto to true
+      setOverviewPhotos([...overviewPhotos, result.assets[0].uri]);
+      setHasPhoto(true);
+
+      // Keep camera mode on after taking photo
+      // We don't toggle isInCameraMode here anymore
+      return;
+    }
+
+    setIsInCameraMode(true);
   };
 
   // Xử lý khi mở modal báo lỗi
+  // Update the openIssueModal function to load the existing note
   const openIssueModal = (item) => {
     setCurrentItem(item);
-    setNote('');
+
+    // Set note state with the existing note if it exists
+    setNote(item.note || '');
 
     // Mở modal từ dưới lên
     Animated.timing(bottomSheetAnimation, {
@@ -588,7 +599,8 @@ export default function InspectionScreen() {
     setIssueModalVisible(true);
   };
 
-  // Xử lý khi chụp ảnh
+  // Xử lý khi chụp dele
+  // Replace your existing takePicture function with this updated version
   const takePicture = async (itemId) => {
     const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
 
@@ -605,17 +617,30 @@ export default function InspectionScreen() {
     });
 
     if (!result.canceled) {
-      // Cập nhật ảnh cho hạng mục
+      // Get the photo URI
+      const photoUri = result.assets[0].uri;
+
+      // Update the checklist with the new photo
       const updatedChecklist = checklist.map((item) => {
         if (item.id === itemId) {
           return {
             ...item,
-            photos: [...item.photos, result.assets[0].uri],
+            photos: [...item.photos, photoUri],
           };
         }
         return item;
       });
+
+      // Update the state
       setChecklist(updatedChecklist);
+
+      // If we're in the issue modal, we need to update the currentItem too
+      if (issueModalVisible && currentItem && currentItem.id === itemId) {
+        setCurrentItem({
+          ...currentItem,
+          photos: [...currentItem.photos, photoUri],
+        });
+      }
     }
   };
 
@@ -821,8 +846,15 @@ export default function InspectionScreen() {
 
   const viewOverviewPhotos = () => {
     // Show photo gallery modal with overview photos
-    // setSelectedPhotos(overviewPhotos);
-    // setIsPhotoGalleryVisible(true);
+    setSelectedPhotos(overviewPhotos);
+    setIsPhotoGalleryVisible(true);
+
+    // Animate the modal sliding up
+    Animated.timing(photoGalleryAnimation, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
   };
 
   // Add a function to exit camera mode
@@ -831,25 +863,95 @@ export default function InspectionScreen() {
     setHasPhoto(false);
   };
 
+  const openPhotoGallery = (photos: string[]) => {
+    setSelectedPhotos(photos);
+    setIsPhotoGalleryVisible(true);
+
+    // Animate the modal sliding up
+    Animated.timing(photoGalleryAnimation, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  // Update the deletePhoto function to reset hasPhoto state when needed
+  // Update the deletePhoto function to properly synchronize state
+  const deletePhoto = (photoUri, itemId = null) => {
+    // If viewing an item's photos
+    if (itemId) {
+      const updatedChecklist = checklist.map((item) => {
+        if (item.id === itemId) {
+          return {
+            ...item,
+            photos: item.photos.filter((uri) => uri !== photoUri),
+          };
+        }
+        return item;
+      });
+
+      setChecklist(updatedChecklist);
+
+      // Also update currentItem if in issue modal
+      if (currentItem && currentItem.id === itemId) {
+        const updatedPhotos = currentItem.photos.filter(
+          (uri) => uri !== photoUri
+        );
+        setCurrentItem({
+          ...currentItem,
+          photos: updatedPhotos,
+        });
+      }
+    }
+    // If viewing overview photos
+    else {
+      const updatedOverviewPhotos = overviewPhotos.filter(
+        (uri) => uri !== photoUri
+      );
+      setOverviewPhotos(updatedOverviewPhotos);
+    }
+
+    // Always update selectedPhotos state regardless of source
+    const updatedSelectedPhotos = selectedPhotos.filter(
+      (uri) => uri !== photoUri
+    );
+    setSelectedPhotos(updatedSelectedPhotos);
+
+    // If all photos are deleted, reset hasPhoto state
+    if (updatedSelectedPhotos.length === 0) {
+      // If we were viewing overview photos and they're all gone
+      if (
+        !itemId &&
+        overviewPhotos.filter((uri) => uri !== photoUri).length === 0
+      ) {
+        setHasPhoto(false);
+      }
+
+      // Close the photo gallery modal when all photos are deleted
+      setIsPhotoGalleryVisible(false);
+      photoGalleryAnimation.setValue(0);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
-
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.replace('/home')}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="arrow-back" size={24} color="#1e293b" />
-        </TouchableOpacity>
+      {false && (
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => router.replace('/home')}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="arrow-back" size={24} color="#1e293b" />
+          </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>Kiểm tra dự án</Text>
-        <TouchableOpacity>
-          <Ionicons name="ellipsis-vertical" size={24} color="#1e293b" />
-        </TouchableOpacity>
-      </View>
-
+          <Text style={styles.headerTitle}>Kiểm tra dự án</Text>
+          <TouchableOpacity>
+            <Ionicons name="ellipsis-vertical" size={24} color="#1e293b" />
+          </TouchableOpacity>
+        </View>
+      )}
       {/* Progress Bar */}
       <View style={styles.progressContainer}>
         <View style={styles.progressTextContainer}>
@@ -862,7 +964,6 @@ export default function InspectionScreen() {
           <View style={[styles.progressBar, { width: `${progress}%` }]} />
         </View>
       </View>
-
       {/* Direction Selector */}
       <View style={styles.directionContainer}>
         {/* <Text style={styles.sectionTitle}>Chọn hướng:</Text> */}
@@ -895,7 +996,6 @@ export default function InspectionScreen() {
           ))}
         </View>
       </View>
-
       {/* House Parts Selector */}
       <View style={styles.selectorContainer}>
         {/* <Text style={styles.sectionTitle}>Phần kiểm tra:</Text> */}
@@ -948,7 +1048,6 @@ export default function InspectionScreen() {
           ))}
         </ScrollView>
       </View>
-
       {/* Detail Types */}
       <View style={styles.selectorContainer}>
         {/* <Text style={styles.sectionTitle}>Chi tiết kiểm tra:</Text> */}
@@ -983,7 +1082,6 @@ export default function InspectionScreen() {
           ))}
         </ScrollView>
       </View>
-
       {/* Blueprint */}
       <View style={styles.blueprintContainer}>
         <Image
@@ -992,56 +1090,40 @@ export default function InspectionScreen() {
           resizeMode="contain"
         />
 
-        {/* Primary action button - only show after taking photo in camera mode */}
-        {isInCameraMode && hasPhoto && (
+        {/* Camera button - always visible */}
+        {!hasPhoto && (
           <TouchableOpacity
-            style={styles.allOkButton}
-            onPress={markAllAsCompleted}
+            style={[styles.cameraButton]}
+            onPress={markAllCompleteAndOpenCamera}
           >
-            <Ionicons name="checkmark-circle" size={16} color="white" />
+            <Ionicons name="camera" size={16} color="white" />
             <Text style={styles.allOkText}>Tất cả OK</Text>
           </TouchableOpacity>
         )}
 
-        {/* Camera button - always visible */}
-        <TouchableOpacity
-          style={[
-            styles.cameraButton,
-            isInCameraMode && styles.activeCameraButton,
-            // Place it at the rightmost position when in camera mode and no photo yet
-            isInCameraMode && !hasPhoto && { right: 5 },
-            // Otherwise use default position
-            isInCameraMode && hasPhoto && { right: 90 },
-          ]}
-          onPress={toggleCameraMode}
-        >
-          <Ionicons name="camera" size={16} color="white" />
-          <Text style={styles.allOkText}>Tất cả OK</Text>
-        </TouchableOpacity>
-
         {/* View Photos button - only show when in camera mode and has photos */}
-        {isInCameraMode && hasPhoto && overviewPhotos.length > 0 && (
-          <TouchableOpacity
-            style={styles.photoGalleryButton}
-            onPress={viewOverviewPhotos}
-          >
-            <Ionicons name="images-outline" size={16} color="white" />
-            <Text style={styles.allOkText}>Xem ảnh</Text>
-          </TouchableOpacity>
-        )}
+        {hasPhoto && overviewPhotos.length > 0 && (
+          <>
+            {/* "All OK" button at bottom right */}
+            <TouchableOpacity
+              style={styles.allOkButton}
+              onPress={openAllOKCamera}
+            >
+              <Ionicons name="checkmark-circle" size={16} color="white" />
+              <Text style={styles.allOkText}>Tất cả OK</Text>
+            </TouchableOpacity>
 
-        {/* Exit camera mode - only show when in camera mode */}
-        {isInCameraMode && (
-          <TouchableOpacity
-            style={styles.exitCameraButton}
-            onPress={exitCameraMode}
-          >
-            <Ionicons name="close-circle" size={16} color="white" />
-            <Text style={styles.allOkText}>Thoát</Text>
-          </TouchableOpacity>
+            {/* View Photos button at bottom left */}
+            <TouchableOpacity
+              style={styles.photoGalleryButton}
+              onPress={viewOverviewPhotos}
+            >
+              <Ionicons name="images-outline" size={16} color="white" />
+              <Text style={styles.allOkText}>Xem ảnh</Text>
+            </TouchableOpacity>
+          </>
         )}
       </View>
-
       {/* Checklist */}
       <View style={styles.checklistContainer}>
         <Text style={styles.sectionTitle}>Danh sách kiểm tra:</Text>
@@ -1145,7 +1227,6 @@ export default function InspectionScreen() {
           )}
         </ScrollView>
       </View>
-
       {/* Issue Modal */}
       <Modal
         animationType="none"
@@ -1156,20 +1237,165 @@ export default function InspectionScreen() {
           bottomSheetAnimation.setValue(0);
         }}
       >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
+          <Pressable
+            style={styles.modalOverlay}
+            onPress={() => {
+              Keyboard.dismiss();
+              setIssueModalVisible(false);
+              bottomSheetAnimation.setValue(0);
+            }}
+          >
+            <Animated.View
+              style={[
+                styles.modalContent,
+                {
+                  transform: [
+                    {
+                      translateY: bottomSheetAnimation.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [600, 0],
+                      }),
+                    },
+                  ],
+                },
+              ]}
+              onStartShouldSetResponder={() => true}
+            >
+              <View style={styles.modalHeader}>
+                <View style={styles.modalHandleBar} />
+                <Text style={styles.modalTitle}>Báo cáo vấn đề</Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    Keyboard.dismiss();
+                    setIssueModalVisible(false);
+                    bottomSheetAnimation.setValue(0);
+                  }}
+                >
+                  <Ionicons name="close" size={24} color="#64748b" />
+                </TouchableOpacity>
+              </View>
+
+              {currentItem && (
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                  <ScrollView
+                    style={styles.modalBody}
+                    keyboardShouldPersistTaps="handled"
+                  >
+                    <Text style={styles.modalItemTitle}>
+                      {currentItem.name}
+                    </Text>
+
+                    <View style={styles.noteContainer}>
+                      <Text style={styles.noteLabel}>Ghi chú vấn đề:</Text>
+                      <View style={styles.noteInputContainer}>
+                        <TextInput
+                          style={styles.noteInput}
+                          multiline={true}
+                          placeholder="Mô tả vấn đề phát hiện..."
+                          value={note}
+                          onChangeText={setNote}
+                          returnKeyType="done"
+                          blurOnSubmit={true}
+                          onSubmitEditing={Keyboard.dismiss}
+                        />
+                      </View>
+                    </View>
+
+                    <View style={styles.modalPhotoSection}>
+                      <Text style={styles.photoLabel}>Ảnh chụp vấn đề:</Text>
+
+                      {/* Only show ScrollView when there are photos */}
+                      {currentItem?.photos?.length > 0 && (
+                        <View>
+                          <Text style={styles.photoGalleryLabel}>
+                            Ảnh đã chụp ({currentItem.photos.length}):
+                          </Text>
+                          <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            style={styles.photoList}
+                          >
+                            {currentItem.photos.map((photo, index) => (
+                              <View
+                                key={index}
+                                style={styles.photoThumbnailContainer}
+                              >
+                                <Image
+                                  source={{ uri: photo }}
+                                  style={styles.photoThumbnail}
+                                />
+                                <TouchableOpacity
+                                  style={styles.deletePhotoButtonSmall}
+                                  onPress={() =>
+                                    deletePhoto(photo, currentItem.id)
+                                  }
+                                >
+                                  <Ionicons
+                                    name="close-circle"
+                                    size={20}
+                                    color="#ef4444"
+                                  />
+                                </TouchableOpacity>
+                              </View>
+                            ))}
+                          </ScrollView>
+                        </View>
+                      )}
+
+                      <TouchableOpacity
+                        style={styles.takePictureButton}
+                        onPress={() => takePicture(currentItem.id)}
+                      >
+                        <Ionicons name="camera" size={24} color="white" />
+                        <Text style={styles.takePictureText}>Chụp ảnh</Text>
+                      </TouchableOpacity>
+                    </View>
+
+                    <TouchableOpacity
+                      style={styles.saveButton}
+                      onPress={saveIssue}
+                    >
+                      <Text style={styles.saveButtonText}>Lưu vấn đề</Text>
+                    </TouchableOpacity>
+
+                    {/* Add padding at the bottom to ensure content is visible above keyboard */}
+                    <View style={{ height: 100 }} />
+                  </ScrollView>
+                </TouchableWithoutFeedback>
+              )}
+            </Animated.View>
+          </Pressable>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* Add this Photo Gallery Modal after the Issue Modal */}
+      <Modal
+        animationType="none"
+        transparent={true}
+        visible={isPhotoGalleryVisible}
+        onRequestClose={() => {
+          setIsPhotoGalleryVisible(false);
+          photoGalleryAnimation.setValue(0);
+        }}
+      >
         <Pressable
           style={styles.modalOverlay}
           onPress={() => {
-            setIssueModalVisible(false);
-            bottomSheetAnimation.setValue(0);
+            setIsPhotoGalleryVisible(false);
+            photoGalleryAnimation.setValue(0);
           }}
         >
           <Animated.View
             style={[
-              styles.modalContent,
+              styles.photoGalleryContent,
               {
                 transform: [
                   {
-                    translateY: bottomSheetAnimation.interpolate({
+                    translateY: photoGalleryAnimation.interpolate({
                       inputRange: [0, 1],
                       outputRange: [600, 0],
                     }),
@@ -1182,60 +1408,41 @@ export default function InspectionScreen() {
           >
             <View style={styles.modalHeader}>
               <View style={styles.modalHandleBar} />
-              <Text style={styles.modalTitle}>Báo cáo vấn đề</Text>
+              <Text style={styles.modalTitle}>Ảnh đã chụp</Text>
               <TouchableOpacity
                 onPress={() => {
-                  setIssueModalVisible(false);
-                  bottomSheetAnimation.setValue(0);
+                  setIsPhotoGalleryVisible(false);
+                  photoGalleryAnimation.setValue(0);
                 }}
               >
                 <Ionicons name="close" size={24} color="#64748b" />
               </TouchableOpacity>
             </View>
 
-            {currentItem && (
-              <View style={styles.modalBody}>
-                <Text style={styles.modalItemTitle}>{currentItem.name}</Text>
-
-                <View style={styles.noteContainer}>
-                  <Text style={styles.noteLabel}>Ghi chú vấn đề:</Text>
-                  <TextInput
-                    style={styles.noteInput}
-                    multiline={true}
-                    placeholder="Mô tả vấn đề phát hiện..."
-                    value={note}
-                    onChangeText={setNote}
+            <ScrollView contentContainerStyle={styles.photoGrid}>
+              {selectedPhotos.map((photo, index) => (
+                <View key={index} style={styles.photoContainer}>
+                  <Image
+                    source={{ uri: photo }}
+                    style={styles.galleryPhoto}
+                    resizeMode="cover"
                   />
-                </View>
-
-                <View style={styles.modalPhotoSection}>
-                  <Text style={styles.photoLabel}>Ảnh chụp vấn đề:</Text>
                   <TouchableOpacity
-                    style={styles.takePictureButton}
-                    onPress={() => takePicture(currentItem.id)}
+                    style={styles.deletePhotoButton}
+                    onPress={() => deletePhoto(photo, currentItem?.id)}
                   >
-                    <Ionicons name="camera" size={24} color="white" />
-                    <Text style={styles.takePictureText}>Chụp ảnh</Text>
+                    <Ionicons name="trash" size={20} color="white" />
                   </TouchableOpacity>
-
-                  {currentItem.photos.length > 0 && (
-                    <ScrollView horizontal style={styles.photoList}>
-                      {currentItem.photos.map((photo, index) => (
-                        <Image
-                          key={index}
-                          source={{ uri: photo }}
-                          style={styles.photoThumbnail}
-                        />
-                      ))}
-                    </ScrollView>
-                  )}
                 </View>
+              ))}
 
-                <TouchableOpacity style={styles.saveButton} onPress={saveIssue}>
-                  <Text style={styles.saveButtonText}>Lưu vấn đề</Text>
-                </TouchableOpacity>
-              </View>
-            )}
+              {selectedPhotos.length === 0 && (
+                <View style={styles.emptyPhotosContainer}>
+                  <Ionicons name="images-outline" size={48} color="#cbd5e1" />
+                  <Text style={styles.emptyPhotosText}>Không có ảnh nào</Text>
+                </View>
+              )}
+            </ScrollView>
           </Animated.View>
         </Pressable>
       </Modal>
@@ -1368,8 +1575,8 @@ const styles = StyleSheet.create({
   cameraButton: {
     position: 'absolute',
     bottom: 5,
-    right: 5, // Position it to the left of the "Tất cả OK" button
-    backgroundColor: '#6366f1', // Purple color for camera
+    right: 5,
+    backgroundColor: '#6366f1',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -1567,8 +1774,56 @@ const styles = StyleSheet.create({
     color: '#334155',
     marginBottom: 16,
   },
-  noteContainer: {
-    marginBottom: 16,
+  // Add these to your StyleSheet
+  photoGalleryContent: {
+    width: '100%',
+    maxHeight: '90%',
+    backgroundColor: 'white',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    overflow: 'hidden',
+  },
+  photoGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    padding: 8,
+    paddingBottom: 30,
+  },
+  photoContainer: {
+    width: '50%',
+    padding: 4,
+    aspectRatio: 1,
+  },
+  galleryPhoto: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 8,
+  },
+  noteInputContainer: {
+    position: 'relative',
+  },
+  noteInput: {
+    backgroundColor: '#f1f5f9',
+    borderRadius: 8,
+    padding: 12,
+    paddingBottom: 40,
+    minHeight: 100,
+    textAlignVertical: 'top',
+    color: '#334155',
+  },
+  keyboardDoneButton: {
+    position: 'absolute',
+    bottom: 8,
+    right: 8,
+    backgroundColor: '#2563eb',
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+    borderRadius: 4,
+  },
+  keyboardDoneText: {
+    color: 'white',
+    fontWeight: '500',
+    fontSize: 12,
   },
   noteLabel: {
     fontSize: 14,
@@ -1607,15 +1862,28 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: 8,
   },
-  photoList: {
-    flexDirection: 'row',
-    marginTop: 8,
+  // Add to your StyleSheet
+  photoGalleryLabel: {
+    fontSize: 14,
+    color: '#475569',
+    marginTop: 16,
+    marginBottom: 8,
+    fontWeight: '500',
+  },
+  photoThumbnailContainer: {
+    marginRight: 8,
+    borderRadius: 8,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#e2e8f0',
   },
   photoThumbnail: {
     width: 80,
     height: 80,
-    borderRadius: 8,
-    marginRight: 8,
+  },
+  photoList: {
+    flexDirection: 'row',
+    marginBottom: 16,
   },
   saveButton: {
     backgroundColor: '#2563eb',
@@ -1653,13 +1921,51 @@ const styles = StyleSheet.create({
   },
   exitCameraButton: {
     position: 'absolute',
-    bottom: 5,
-    right: 120,
+    bottom: 45, // Position above the photo gallery button
+    left: 5,
     backgroundColor: '#f43f5e',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  deletePhotoButton: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: '#ef4444',
+    borderRadius: 18,
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+    elevation: 3,
+  },
+  deletePhotoButtonSmall: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyPhotosContainer: {
+    width: '100%',
+    height: 200,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyPhotosText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#94a3b8',
   },
 });
