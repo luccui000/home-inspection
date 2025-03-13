@@ -4,11 +4,7 @@ import { Tabs } from 'expo-router';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
-import {
-  Ionicons,
-  MaterialCommunityIcons,
-  MaterialIcons,
-} from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -30,26 +26,7 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="scan"
-        options={{
-          title: 'Scan',
-          headerShown: false,
-          tabBarIcon: (props) => (
-            <MaterialCommunityIcons name="radar" size={24} color="black" />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="history"
-        options={{
-          title: 'History',
-          headerShown: false,
-          tabBarIcon: (props) => (
-            <MaterialIcons name="history" size={24} color="black" />
-          ),
-        }}
-      />
+
       <Tabs.Screen
         name="setting"
         options={{

@@ -4,7 +4,7 @@ import { View } from 'react-native';
 export default function App() {
   return (
     <View>
-      <Redirect href={'/home'}></Redirect>
+      <Redirect href={'/checklist'}></Redirect>
     </View>
   );
 }

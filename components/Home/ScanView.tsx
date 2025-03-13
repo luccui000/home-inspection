@@ -1578,9 +1578,7 @@ const styles = StyleSheet.create({
   imageSection: {
     marginTop: 10,
   },
-  imageContainer: {
-    position: 'relative',
-  },
+
   issueImage: {
     width: '100%',
     height: 200,
@@ -1657,11 +1655,6 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 6,
-  },
-  issuesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'flex-start', // Align items from start
   },
   markerCount: {
     position: 'absolute',
@@ -1760,53 +1753,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     height: 40,
-  },
-  issueIconContainer: {
-    marginRight: 6,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 12,
-    height: 12,
-  },
-  miniShapeMarker: {
-    width: 10,
-    height: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1,
-    elevation: 1,
-  },
-  miniCircleMarker: {
-    borderRadius: 5,
-  },
-  miniSquareMarker: {
-    borderRadius: 2,
-  },
-  miniTriangleContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 10,
-    height: 10,
-  },
-  miniTriangleMarker: {
-    width: 0,
-    height: 0,
-    backgroundColor: 'transparent',
-    borderStyle: 'solid',
-    borderLeftWidth: 5,
-    borderRightWidth: 5,
-    borderBottomWidth: 10,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-  },
-  miniHexagonMarker: {
-    width: 10,
-    height: 8,
-    borderRadius: 2,
-    transform: [{ rotate: '30deg' }],
   },
   issueSummaryContainer: {
     position: 'absolute',
