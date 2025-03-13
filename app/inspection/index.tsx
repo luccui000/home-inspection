@@ -16,15 +16,37 @@ import { StatusBar } from 'expo-status-bar';
 import { useNavigation, useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import northBlueprint from '../../assets/images/north-blueprint.jpg';
+import eastBlueprint from '../../assets/images/east-blueprint.jpg';
+import southBlueprint from '../../assets/images/south-blueprint.jpg';
+import westBlueprint from '../../assets/images/west-blueprint.jpg';
+
+interface HousePart {
+  id: string;
+  name: string;
+  icon: string;
+}
+
+interface DetailType {
+  id: string;
+  name: string;
+  icon: string;
+}
+
+interface Direction {
+  id: string;
+  name: string;
+  icon: string;
+}
 
 // Dữ liệu mẫu
-const HOUSE_PARTS = [
+const HOUSE_PARTS: HousePart[] = [
   { id: 'roof', name: 'Mái trên', icon: 'home-roof' },
   { id: 'walls', name: 'Tường', icon: 'wall' },
   { id: 'foundation', name: 'Nền móng', icon: 'foundation' },
 ];
 
-const DETAIL_TYPES = [
+const DETAIL_TYPES: DetailType[] = [
   { id: 'paint', name: 'Sơn', icon: 'format-paint' },
   { id: 'material', name: 'Vật liệu', icon: 'material-design' },
   { id: 'structure', name: 'Kết cấu', icon: 'pillar' },
@@ -123,6 +145,16 @@ const CHECKLIST_ITEMS = [
   },
 ];
 
+interface ChecklistItem {
+  id: number;
+  name: string;
+  part: string;
+  detail: string;
+  status: 'pending' | 'completed' | 'issue';
+  photos: string[];
+  note?: string;
+}
+
 export default function InspectionScreen() {
   const router = useRouter();
   const navigation = useNavigation();
@@ -161,7 +193,7 @@ export default function InspectionScreen() {
   });
 
   // Xử lý khi chọn/bỏ chọn chi tiết
-  const toggleDetail = (detailId) => {
+  const toggleDetail = (detailId: string) => {
     if (selectedDetails.includes(detailId)) {
       setSelectedDetails(selectedDetails.filter((id) => id !== detailId));
     } else {
@@ -170,10 +202,22 @@ export default function InspectionScreen() {
   };
 
   // Xử lý khi đánh dấu hoàn thành một hạng mục
-  const markItemAsCompleted = async (itemId) => {
+  const markItemAsCompleted = async (itemId: string) => {
     const updatedChecklist = checklist.map((item) => {
       if (item.id === itemId) {
         return { ...item, status: 'completed' };
+      }
+      return item;
+    });
+    setChecklist(updatedChecklist);
+  };
+
+  const toggleItemCompletion = async (itemId: number) => {
+    const updatedChecklist = checklist.map((item) => {
+      if (item.id === itemId) {
+        // Toggle between 'completed' and 'pending'
+        const newStatus = item.status === 'completed' ? 'pending' : 'completed';
+        return { ...item, status: newStatus };
       }
       return item;
     });
@@ -243,6 +287,21 @@ export default function InspectionScreen() {
     bottomSheetAnimation.setValue(0);
   };
 
+  const getBlueprintSource = (direction: string) => {
+    switch (direction) {
+      case 'north':
+        return northBlueprint;
+      case 'east':
+        return eastBlueprint;
+      case 'south':
+        return southBlueprint;
+      case 'west':
+        return westBlueprint;
+      default:
+        return northBlueprint; // Default to north
+    }
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
@@ -306,11 +365,11 @@ export default function InspectionScreen() {
 
       {/* Blueprint */}
       <View style={styles.blueprintContainer}>
-        {/* <Image
-          source={require('../assets/images/house-blueprint.png')}
+        <Image
+          source={getBlueprintSource(selectedDirection)}
           style={styles.blueprint}
           resizeMode="contain"
-        /> */}
+        />
         <TouchableOpacity style={styles.allOkButton}>
           <Ionicons name="checkmark-circle" size={24} color="white" />
           <Text style={styles.allOkText}>Tất cả OK</Text>
@@ -449,25 +508,36 @@ export default function InspectionScreen() {
 
               <View style={styles.checklistActions}>
                 <TouchableOpacity
-                  style={[styles.actionButton, styles.checkButton]}
-                  onPress={() => markItemAsCompleted(item.id)}
+                  style={[
+                    styles.actionButton,
+                    item.status === 'completed'
+                      ? styles.activeCheckButton
+                      : styles.checkButton,
+                  ]}
+                  onPress={() => toggleItemCompletion(item.id)}
                 >
                   <Ionicons name="checkmark" size={20} color="white" />
                 </TouchableOpacity>
 
-                <TouchableOpacity
-                  style={[styles.actionButton, styles.photoButton]}
-                  onPress={() => takePicture(item.id)}
-                >
-                  <Ionicons name="camera" size={20} color="white" />
-                </TouchableOpacity>
+                {/* Show camera button only when item is checked */}
+                {item.status === 'completed' && (
+                  <TouchableOpacity
+                    style={[styles.actionButton, styles.photoButton]}
+                    onPress={() => takePicture(item.id)}
+                  >
+                    <Ionicons name="camera" size={20} color="white" />
+                  </TouchableOpacity>
+                )}
 
-                <TouchableOpacity
-                  style={[styles.actionButton, styles.issueButton]}
-                  onPress={() => openIssueModal(item)}
-                >
-                  <Ionicons name="close" size={20} color="white" />
-                </TouchableOpacity>
+                {/* Show issue button (X) only when item is not checked */}
+                {item.status !== 'completed' && (
+                  <TouchableOpacity
+                    style={[styles.actionButton, styles.issueButton]}
+                    onPress={() => openIssueModal(item)}
+                  >
+                    <Ionicons name="close" size={20} color="white" />
+                  </TouchableOpacity>
+                )}
               </View>
             </View>
           ))}
@@ -787,7 +857,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   checkButton: {
-    backgroundColor: '#10b981',
+    backgroundColor: '#64748b', // Changed to a lighter color when not active
+  },
+
+  activeCheckButton: {
+    backgroundColor: '#10b981', // Green color when active
   },
   photoButton: {
     backgroundColor: '#6366f1',
@@ -802,5 +876,107 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: 'white',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: 30,
+    minHeight: 350,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  modalHandleBar: {
+    position: 'absolute',
+    top: 6,
+    left: '50%',
+    width: 40,
+    height: 5,
+    backgroundColor: '#cbd5e1',
+    borderRadius: 3,
+    transform: [{ translateX: -20 }],
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1e293b',
+    flex: 1,
+    textAlign: 'center',
+  },
+  modalBody: {
+    padding: 16,
+  },
+  modalItemTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#334155',
+    marginBottom: 16,
+  },
+  noteContainer: {
+    marginBottom: 16,
+  },
+  noteLabel: {
+    fontSize: 14,
+    color: '#475569',
+    marginBottom: 8,
+    fontWeight: '500',
+  },
+  noteInput: {
+    backgroundColor: '#f1f5f9',
+    borderRadius: 8,
+    padding: 12,
+    height: 100,
+    textAlignVertical: 'top',
+    color: '#334155',
+  },
+  modalPhotoSection: {
+    marginBottom: 20,
+  },
+  photoLabel: {
+    fontSize: 14,
+    color: '#475569',
+    marginBottom: 8,
+    fontWeight: '500',
+  },
+  takePictureButton: {
+    backgroundColor: '#2563eb',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  takePictureText: {
+    color: 'white',
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  photoList: {
+    flexDirection: 'row',
+    marginTop: 8,
+  },
+  photoThumbnail: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    marginRight: 8,
+  },
+  saveButton: {
+    backgroundColor: '#2563eb',
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  saveButtonText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 16,
   },
 });
