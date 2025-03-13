@@ -469,7 +469,19 @@ export default function InspectionScreen() {
   const [selectedPhotos, setSelectedPhotos] = useState<string[]>([]);
   const [pinnedIcons, setPinnedIcons] = useState([]);
   const [selectedShape, setSelectedShape] = useState(null);
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [blueprintLayout, setBlueprintLayout] = useState({
+    width: 0,
+    height: 0,
+    x: 0,
+    y: 0,
+  });
+  const [isPanningEnabled, setIsPanningEnabled] = useState(false);
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const panStartRef = useRef({ x: 0, y: 0 });
   const blueprintRef = useRef(null);
+  const blueprintContainerRef = useRef(null);
+  const blueprintImageRef = useRef(null);
 
   const bottomSheetAnimation = useRef(new Animated.Value(0)).current;
   const photoGalleryAnimation = useRef(new Animated.Value(0)).current;
@@ -526,33 +538,125 @@ export default function InspectionScreen() {
     }
   }, [selectedDirection, selectedPart, selectedDetails]);
 
+  // Add this function to measure the blueprint dimensions
+  const onBlueprintLayout = (event) => {
+    const { width, height, x, y } = event.nativeEvent.layout;
+    setBlueprintLayout({ width, height, x, y });
+  };
+
+  // Functions to handle zoom
+  const zoomIn = () => {
+    if (zoomLevel < 3) {
+      setZoomLevel((prevZoom) => Math.min(prevZoom + 0.25, 3));
+    }
+  };
+
+  const zoomOut = () => {
+    if (zoomLevel > 1) {
+      setZoomLevel((prevZoom) => {
+        const newZoom = Math.max(prevZoom - 0.25, 1);
+        // If zooming all the way out, reset pan offset
+        if (newZoom === 1) {
+          setPanOffset({ x: 0, y: 0 });
+        }
+        return newZoom;
+      });
+    }
+  };
+
   // Xử lý khi đánh dấu hoàn thành một hạng mục
+  // Update the handlePlaceIcon function with this fixed version
+  // Replace the handlePlaceIcon function with this corrected version
   const handlePlaceIcon = (event) => {
-    if (!selectedShape) return;
+    // Don't do anything if no shape is selected or if we're in pan mode
+    if (!selectedShape || isPanningEnabled) return;
 
-    // Prevent event bubbling
-    event.stopPropagation();
+    // Get touch event coordinates
+    const { nativeEvent } = event;
+    const { locationX, locationY } = nativeEvent;
 
-    // Get touch location
-    const { locationX, locationY } = event.nativeEvent;
+    console.log('Raw touch coordinates:', locationX, locationY);
 
-    console.log('Placing icon at:', locationX, locationY);
+    // Calculate the actual position on the unzoomed/unpanned blueprint
+    // When we have zoom and pan, we need to:
+    // 1. Adjust for the center of the blueprint (transform origin)
+    // 2. Account for the current pan offset
+    // 3. Account for the zoom level
 
-    // Add the icon to the pinnedIcons array
+    const centerX = blueprintLayout.width / 2;
+    const centerY = blueprintLayout.height / 2;
+
+    // Calculate position relative to center, accounting for pan and zoom
+    const adjustedX = (locationX - centerX - panOffset.x) / zoomLevel + centerX;
+    const adjustedY = (locationY - centerY - panOffset.y) / zoomLevel + centerY;
+
+    console.log(
+      'Adjusted coordinates:',
+      adjustedX,
+      adjustedY,
+      'Zoom:',
+      zoomLevel,
+      'Pan:',
+      panOffset.x,
+      panOffset.y
+    );
+
+    // Add the icon with the corrected coordinates
     setPinnedIcons([
       ...pinnedIcons,
       {
         id: Date.now().toString(),
         shape: selectedShape.shape,
         color: selectedShape.color,
-        x: locationX,
-        y: locationY,
+        x: adjustedX,
+        y: adjustedY,
         direction: selectedDirection,
       },
     ]);
 
-    // Reset the selected shape after placing
+    // Reset selected shape after placing
     setSelectedShape(null);
+  };
+
+  const handlePanStart = (event) => {
+    if (isPanningEnabled && zoomLevel > 1) {
+      const { locationX, locationY } = event.nativeEvent;
+      panStartRef.current = {
+        x: locationX - panOffset.x,
+        y: locationY - panOffset.y,
+      };
+    }
+  };
+
+  const handlePanMove = (event) => {
+    if (isPanningEnabled && zoomLevel > 1) {
+      const { locationX, locationY } = event.nativeEvent;
+
+      // Calculate new pan offset
+      const newX = locationX - panStartRef.current.x;
+      const newY = locationY - panStartRef.current.y;
+
+      // Calculate maximum allowed pan offset based on zoom level
+      const maxPanX = (blueprintLayout.width * (zoomLevel - 1)) / 2;
+      const maxPanY = (blueprintLayout.height * (zoomLevel - 1)) / 2;
+
+      // Constrain pan offset within bounds
+      const constrainedX = Math.max(-maxPanX, Math.min(maxPanX, newX));
+      const constrainedY = Math.max(-maxPanY, Math.min(maxPanY, newY));
+
+      setPanOffset({
+        x: constrainedX,
+        y: constrainedY,
+      });
+    }
+  };
+
+  const togglePanMode = () => {
+    setIsPanningEnabled(!isPanningEnabled);
+    // If turning off pan mode, reset pan offset
+    if (isPanningEnabled) {
+      setPanOffset({ x: 0, y: 0 });
+    }
   };
 
   // Function to remove a pinned icon
@@ -968,7 +1072,7 @@ export default function InspectionScreen() {
     <View style={styles.container}>
       <StatusBar style="dark" />
       {/* Header */}
-      {false && (
+      {true && (
         <View style={styles.header}>
           <TouchableOpacity
             onPress={() => router.replace('/home')}
@@ -1115,78 +1219,136 @@ export default function InspectionScreen() {
       </View>
       {/* Blueprint */}
       <View
-        style={styles.blueprintContainer}
-        ref={blueprintRef}
-        onTouchEnd={handlePlaceIcon}
+        style={[styles.blueprintContainer, { overflow: 'hidden' }]}
+        ref={blueprintContainerRef}
         onStartShouldSetResponder={() => true}
+        onTouchEnd={handlePlaceIcon}
       >
-        <Image
-          source={getBlueprintSource(selectedDirection)}
-          style={styles.blueprint}
-          resizeMode="contain"
-        />
+        <View style={styles.zoomControls}>
+          <TouchableOpacity style={styles.zoomButton} onPress={zoomIn}>
+            <Ionicons name="add-circle" size={24} color="#2563eb" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.zoomButton} onPress={zoomOut}>
+            <Ionicons name="remove-circle" size={24} color="#2563eb" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.zoomButton,
+              isPanningEnabled && { backgroundColor: '#dbeafe' },
+            ]}
+            onPress={togglePanMode}
+          >
+            <Ionicons
+              name="hand"
+              size={24}
+              color={isPanningEnabled ? '#2563eb' : '#64748b'}
+            />
+          </TouchableOpacity>
+        </View>
+
+        <View
+          style={[
+            styles.blueprintImageContainer,
+            {
+              transform: [
+                { scale: zoomLevel },
+                { translateX: panOffset.x },
+                { translateY: panOffset.y },
+              ],
+            },
+          ]}
+          onLayout={onBlueprintLayout}
+          ref={blueprintImageRef}
+          onTouchEnd={!isPanningEnabled ? handlePlaceIcon : undefined}
+          onResponderGrant={handlePanStart}
+          onResponderMove={handlePanMove}
+          onStartShouldSetResponder={() => true}
+        >
+          <Image
+            source={getBlueprintSource(selectedDirection)}
+            style={styles.blueprint}
+            resizeMode="contain"
+          />
+
+          {/* Show pinned icons for current direction */}
+          {pinnedIcons
+            .filter((icon) => icon.direction === selectedDirection)
+            .map((icon) => {
+              const centerX = blueprintLayout.width / 2;
+              const centerY = blueprintLayout.height / 2;
+
+              // Calculate the position relative to center, then apply zoom and pan
+              const displayX =
+                (icon.x - centerX) * zoomLevel + centerX + panOffset.x;
+              const displayY =
+                (icon.y - centerY) * zoomLevel + centerY + panOffset.y;
+
+              return (
+                <TouchableOpacity
+                  key={icon.id}
+                  style={[
+                    styles.pinnedIcon,
+                    {
+                      left: displayX - 12,
+                      top: displayY - 12,
+                    },
+                  ]}
+                  onPress={() => removePinnedIcon(icon.id)}
+                >
+                  {icon.shape === 'circle' && (
+                    <View
+                      style={[
+                        styles.pinnedCircle,
+                        { backgroundColor: icon.color },
+                      ]}
+                    />
+                  )}
+                  {icon.shape === 'triangle' && (
+                    <View style={styles.triangleContainer}>
+                      <View
+                        style={[
+                          styles.pinnedTriangle,
+                          {
+                            borderBottomColor: icon.color,
+                            borderBottomWidth: 16,
+                            borderLeftWidth: 8,
+                            borderRightWidth: 8,
+                          },
+                        ]}
+                      />
+                    </View>
+                  )}
+                  {icon.shape === 'square' && (
+                    <View
+                      style={[
+                        styles.pinnedSquare,
+                        { backgroundColor: icon.color },
+                      ]}
+                    />
+                  )}
+                  {icon.shape === 'diamond' && (
+                    <View style={styles.diamondContainer}>
+                      <View
+                        style={[
+                          styles.pinnedDiamond,
+                          { backgroundColor: icon.color },
+                        ]}
+                      />
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+        </View>
 
         {/* Display cursor indicator when a shape is selected */}
-        {selectedShape && (
+        {selectedShape && !isPanningEnabled && (
           <View style={styles.blueprintHelpText}>
             <Text style={styles.blueprintHelpTextContent}>
               Chọn vị trí để đặt ký hiệu
             </Text>
           </View>
         )}
-
-        {/* Show pinned icons for current direction */}
-        {pinnedIcons
-          .filter((icon) => icon.direction === selectedDirection)
-          .map((icon) => (
-            <TouchableOpacity
-              key={icon.id}
-              style={[
-                styles.pinnedIcon,
-                {
-                  left: icon.x - 12,
-                  top: icon.y - 12,
-                },
-              ]}
-              onPress={() => removePinnedIcon(icon.id)}
-            >
-              {icon.shape === 'circle' && (
-                <View
-                  style={[styles.pinnedCircle, { backgroundColor: icon.color }]}
-                />
-              )}
-              {icon.shape === 'triangle' && (
-                <View style={styles.triangleContainer}>
-                  <View
-                    style={[
-                      styles.pinnedTriangle,
-                      {
-                        borderBottomColor: icon.color,
-                        borderBottomWidth: 16,
-                        borderLeftWidth: 8,
-                        borderRightWidth: 8,
-                      },
-                    ]}
-                  />
-                </View>
-              )}
-              {icon.shape === 'square' && (
-                <View
-                  style={[styles.pinnedSquare, { backgroundColor: icon.color }]}
-                />
-              )}
-              {icon.shape === 'diamond' && (
-                <View style={styles.diamondContainer}>
-                  <View
-                    style={[
-                      styles.pinnedDiamond,
-                      { backgroundColor: icon.color },
-                    ]}
-                  />
-                </View>
-              )}
-            </TouchableOpacity>
-          ))}
 
         {/* Camera button - always visible */}
         {!hasPhoto && (
@@ -2259,42 +2421,46 @@ const styles = StyleSheet.create({
   pinnedIconContainer: {
     zIndex: 10,
   },
-  pinnedCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: 'white',
-  },
-  pinnedTriangle: {
-    width: 0,
-    height: 0,
-    backgroundColor: 'transparent',
-    borderStyle: 'solid',
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderBottomWidth: 20,
-    borderLeftWidth: 10,
-    borderRightWidth: 10,
-    borderWidth: 2,
-    borderColor: 'white',
-  },
-  pinnedSquare: {
-    width: 24,
-    height: 24,
-    borderWidth: 2,
-    borderColor: 'white',
-  },
-  pinnedDiamond: {
-    width: 16,
-    height: 16,
-    transform: [{ rotate: '45deg' }],
-    borderWidth: 2,
-    borderColor: 'white',
-  },
   draggedIcon: {
     position: 'absolute',
     zIndex: 9999,
     opacity: 0.8,
+  },
+  blueprintImageContainer: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+    transformOrigin: 'center',
+  },
+  zoomControls: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    zIndex: 20,
+    flexDirection: 'column',
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    borderRadius: 8,
+  },
+  zoomButton: {
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  zoomLevelIndicator: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    zIndex: 20,
+  },
+  zoomLevelText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#1e293b',
   },
 });
