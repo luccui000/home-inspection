@@ -459,6 +459,8 @@ export default function InspectionScreen() {
   const [currentItem, setCurrentItem] = useState(null);
   const [note, setNote] = useState('');
   const [isInCameraMode, setIsInCameraMode] = useState(false);
+  const [hasPhoto, setHasPhoto] = useState(false);
+  const [overviewPhotos, setOverviewPhotos] = useState<string[]>([]);
 
   const bottomSheetAnimation = useRef(new Animated.Value(0)).current;
 
@@ -539,8 +541,8 @@ export default function InspectionScreen() {
 
   // Add a function to toggle camera mode
   const toggleCameraMode = async () => {
+    // If we're already in camera mode, take a picture
     if (isInCameraMode) {
-      // If we're already in camera mode, take a picture of the whole area
       const permissionResult =
         await ImagePicker.requestCameraPermissionsAsync();
 
@@ -557,16 +559,18 @@ export default function InspectionScreen() {
       });
 
       if (!result.canceled) {
-        // Here you could save the photo as an overall documentation for this view
-        console.log('Overall photo taken:', result.assets[0].uri);
+        // Save the photo and set hasPhoto to true
+        setOverviewPhotos([...overviewPhotos, result.assets[0].uri]);
+        setHasPhoto(true);
 
-        // Mark all visible items as completed after taking the photo
-        markAllAsCompleted();
+        // Keep camera mode on after taking photo
+        // We don't toggle isInCameraMode here anymore
+        return;
       }
+    } else {
+      // Toggle camera mode on
+      setIsInCameraMode(true);
     }
-
-    // Toggle the camera mode
-    setIsInCameraMode(!isInCameraMode);
   };
 
   // Xử lý khi mở modal báo lỗi
@@ -815,6 +819,18 @@ export default function InspectionScreen() {
     return detail ? detail.name : detailId;
   };
 
+  const viewOverviewPhotos = () => {
+    // Show photo gallery modal with overview photos
+    // setSelectedPhotos(overviewPhotos);
+    // setIsPhotoGalleryVisible(true);
+  };
+
+  // Add a function to exit camera mode
+  const exitCameraMode = () => {
+    setIsInCameraMode(false);
+    setHasPhoto(false);
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
@@ -976,8 +992,8 @@ export default function InspectionScreen() {
           resizeMode="contain"
         />
 
-        {/* Primary action button */}
-        {isInCameraMode && (
+        {/* Primary action button - only show after taking photo in camera mode */}
+        {isInCameraMode && hasPhoto && (
           <TouchableOpacity
             style={styles.allOkButton}
             onPress={markAllAsCompleted}
@@ -987,23 +1003,43 @@ export default function InspectionScreen() {
           </TouchableOpacity>
         )}
 
-        {/* Camera toggle button - always visible */}
+        {/* Camera button - always visible */}
         <TouchableOpacity
           style={[
             styles.cameraButton,
             isInCameraMode && styles.activeCameraButton,
-            // When in camera mode, move to where allOkButton would be since it's now showing
-            isInCameraMode && { right: 5 },
+            // Place it at the rightmost position when in camera mode and no photo yet
+            isInCameraMode && !hasPhoto && { right: 5 },
+            // Otherwise use default position
+            isInCameraMode && hasPhoto && { right: 90 },
           ]}
           onPress={toggleCameraMode}
         >
-          <Ionicons
-            name={isInCameraMode ? 'checkmark-circle' : 'camera'}
-            size={16}
-            color="white"
-          />
-          {isInCameraMode && <Text style={styles.allOkText}>Chụp ảnh</Text>}
+          <Ionicons name="camera" size={16} color="white" />
+          <Text style={styles.allOkText}>Tất cả OK</Text>
         </TouchableOpacity>
+
+        {/* View Photos button - only show when in camera mode and has photos */}
+        {isInCameraMode && hasPhoto && overviewPhotos.length > 0 && (
+          <TouchableOpacity
+            style={styles.photoGalleryButton}
+            onPress={viewOverviewPhotos}
+          >
+            <Ionicons name="images-outline" size={16} color="white" />
+            <Text style={styles.allOkText}>Xem ảnh</Text>
+          </TouchableOpacity>
+        )}
+
+        {/* Exit camera mode - only show when in camera mode */}
+        {isInCameraMode && (
+          <TouchableOpacity
+            style={styles.exitCameraButton}
+            onPress={exitCameraMode}
+          >
+            <Ionicons name="close-circle" size={16} color="white" />
+            <Text style={styles.allOkText}>Thoát</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Checklist */}
@@ -1332,7 +1368,7 @@ const styles = StyleSheet.create({
   cameraButton: {
     position: 'absolute',
     bottom: 5,
-    right: 90, // Position it to the left of the "Tất cả OK" button
+    right: 5, // Position it to the left of the "Tất cả OK" button
     backgroundColor: '#6366f1', // Purple color for camera
     borderRadius: 8,
     paddingHorizontal: 12,
@@ -1603,5 +1639,27 @@ const styles = StyleSheet.create({
     borderStyle: 'solid',
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
+  },
+  photoGalleryButton: {
+    position: 'absolute',
+    bottom: 5,
+    left: 5,
+    backgroundColor: '#3b82f6',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  exitCameraButton: {
+    position: 'absolute',
+    bottom: 5,
+    right: 120,
+    backgroundColor: '#f43f5e',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });
