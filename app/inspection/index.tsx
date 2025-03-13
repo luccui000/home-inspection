@@ -370,11 +370,12 @@ export default function InspectionScreen() {
           style={styles.blueprint}
           resizeMode="contain"
         />
-        <TouchableOpacity style={styles.allOkButton}>
-          <Ionicons name="checkmark-circle" size={24} color="white" />
-          <Text style={styles.allOkText}>Tất cả OK</Text>
-        </TouchableOpacity>
       </View>
+
+      <TouchableOpacity style={styles.allOkButton}>
+        <Ionicons name="checkmark-circle" size={24} color="white" />
+        <Text style={styles.allOkText}>Tất cả OK</Text>
+      </TouchableOpacity>
 
       {/* House Parts Selector */}
       <View style={styles.selectorContainer}>
@@ -471,31 +472,6 @@ export default function InspectionScreen() {
           {filteredChecklist.map((item) => (
             <View key={item.id} style={styles.checklistItem}>
               <View style={styles.checklistHeader}>
-                {item.status === 'completed' && (
-                  <Ionicons
-                    name="checkmark-circle"
-                    size={24}
-                    color="#10b981"
-                    style={styles.statusIcon}
-                  />
-                )}
-                {item.status === 'issue' && (
-                  <Ionicons
-                    name="close-circle"
-                    size={24}
-                    color="#ef4444"
-                    style={styles.statusIcon}
-                  />
-                )}
-                {item.status === 'pending' && (
-                  <Ionicons
-                    name="ellipse-outline"
-                    size={24}
-                    color="#64748b"
-                    style={styles.statusIcon}
-                  />
-                )}
-
                 <Text style={styles.checklistText}>{item.name}</Text>
 
                 {item.photos.length > 0 && (
@@ -663,15 +639,15 @@ const styles = StyleSheet.create({
   },
   progressContainer: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 6,
   },
   progressTextContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: 4, // Reduced from 8
   },
   progressText: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#475569',
     fontWeight: '500',
   },
@@ -692,7 +668,7 @@ const styles = StyleSheet.create({
   },
   directionContainer: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 6,
   },
   sectionTitle: {
     fontSize: 16,
@@ -709,7 +685,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 10,
+    paddingVertical: 6,
     marginHorizontal: 4,
     backgroundColor: '#f1f5f9',
     borderRadius: 8,
@@ -764,7 +740,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 6,
     backgroundColor: '#f1f5f9',
     borderRadius: 8,
     marginRight: 8,
@@ -785,7 +761,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 6,
     backgroundColor: '#f1f5f9',
     borderRadius: 8,
     marginRight: 8,
