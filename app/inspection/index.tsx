@@ -17,6 +17,12 @@ import {
   Platform,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { Dimensions } from 'react-native';
+import {
+  GestureHandlerRootView,
+  PinchGestureHandler,
+  State,
+} from 'react-native-gesture-handler';
 import { Link, useNavigation, useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -483,6 +489,11 @@ export default function InspectionScreen() {
   const blueprintContainerRef = useRef(null);
   const blueprintImageRef = useRef(null);
 
+  const [scale, setScale] = useState(1);
+  const [lastScale, setLastScale] = useState(1);
+  const baseScale = useRef(1);
+  const pinchRef = useRef(null);
+
   const bottomSheetAnimation = useRef(new Animated.Value(0)).current;
   const photoGalleryAnimation = useRef(new Animated.Value(0)).current;
 
@@ -546,21 +557,25 @@ export default function InspectionScreen() {
 
   // Functions to handle zoom
   const zoomIn = () => {
-    if (zoomLevel < 3) {
-      setZoomLevel((prevZoom) => Math.min(prevZoom + 0.25, 3));
+    if (scale < 3) {
+      const newScale = Math.min(scale + 0.25, 3);
+      setScale(newScale);
+      setZoomLevel(newScale);
+      baseScale.current = newScale;
     }
   };
 
   const zoomOut = () => {
-    if (zoomLevel > 1) {
-      setZoomLevel((prevZoom) => {
-        const newZoom = Math.max(prevZoom - 0.25, 1);
-        // If zooming all the way out, reset pan offset
-        if (newZoom === 1) {
-          setPanOffset({ x: 0, y: 0 });
-        }
-        return newZoom;
-      });
+    if (scale > 1) {
+      const newScale = Math.max(scale - 0.25, 1);
+      setScale(newScale);
+      setZoomLevel(newScale);
+      baseScale.current = newScale;
+
+      // If zooming all the way out, reset pan offset
+      if (newScale === 1) {
+        setPanOffset({ x: 0, y: 0 });
+      }
     }
   };
 
@@ -1068,6 +1083,35 @@ export default function InspectionScreen() {
     }
   };
 
+  const onPinchGestureEvent = (event) => {
+    if (isPanningEnabled) return; // Don't zoom if in pan mode
+
+    // Calculate new scale based on gesture
+    const newScale = Math.min(
+      Math.max(baseScale.current * event.nativeEvent.scale, 1),
+      3
+    );
+    setScale(newScale);
+    setZoomLevel(newScale); // Keep zoomLevel in sync with scale
+  };
+
+  const onPinchHandlerStateChange = (event) => {
+    if (isPanningEnabled) return; // Don't zoom if in pan mode
+
+    // When the pinch gesture ends, update the base scale
+    if (event.nativeEvent.oldState === State.ACTIVE) {
+      baseScale.current = scale;
+      setLastScale(scale);
+
+      // Reset pan offset if zooming back to 1
+      if (scale <= 1) {
+        setPanOffset({ x: 0, y: 0 });
+        setScale(1);
+        setZoomLevel(1);
+      }
+    }
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
@@ -1246,100 +1290,106 @@ export default function InspectionScreen() {
           </TouchableOpacity>
         </View>
 
-        <View
-          style={[
-            styles.blueprintImageContainer,
-            {
-              transform: [
-                { scale: zoomLevel },
-                { translateX: panOffset.x },
-                { translateY: panOffset.y },
-              ],
-            },
-          ]}
-          onLayout={onBlueprintLayout}
-          ref={blueprintImageRef}
-          onTouchEnd={!isPanningEnabled ? handlePlaceIcon : undefined}
-          onResponderGrant={handlePanStart}
-          onResponderMove={handlePanMove}
-          onStartShouldSetResponder={() => true}
+        <PinchGestureHandler
+          ref={pinchRef}
+          onGestureEvent={onPinchGestureEvent}
+          onHandlerStateChange={onPinchHandlerStateChange}
         >
-          <Image
-            source={getBlueprintSource(selectedDirection)}
-            style={styles.blueprint}
-            resizeMode="contain"
-          />
+          <View
+            style={[
+              styles.blueprintImageContainer,
+              {
+                transform: [
+                  { scale: zoomLevel },
+                  { translateX: panOffset.x },
+                  { translateY: panOffset.y },
+                ],
+              },
+            ]}
+            onLayout={onBlueprintLayout}
+            ref={blueprintImageRef}
+            onTouchEnd={!isPanningEnabled ? handlePlaceIcon : undefined}
+            onResponderGrant={handlePanStart}
+            onResponderMove={handlePanMove}
+            onStartShouldSetResponder={() => true}
+          >
+            <Image
+              source={getBlueprintSource(selectedDirection)}
+              style={styles.blueprint}
+              resizeMode="contain"
+            />
 
-          {/* Show pinned icons for current direction */}
-          {pinnedIcons
-            .filter((icon) => icon.direction === selectedDirection)
-            .map((icon) => {
-              const centerX = blueprintLayout.width / 2;
-              const centerY = blueprintLayout.height / 2;
+            {/* Show pinned icons for current direction */}
+            {pinnedIcons
+              .filter((icon) => icon.direction === selectedDirection)
+              .map((icon) => {
+                const centerX = blueprintLayout.width / 2;
+                const centerY = blueprintLayout.height / 2;
 
-              // Calculate the position relative to center, then apply zoom and pan
-              const displayX =
-                (icon.x - centerX) * zoomLevel + centerX + panOffset.x;
-              const displayY =
-                (icon.y - centerY) * zoomLevel + centerY + panOffset.y;
+                // Calculate the position relative to center, then apply zoom and pan
+                const displayX =
+                  (icon.x - centerX) * zoomLevel + centerX + panOffset.x;
+                const displayY =
+                  (icon.y - centerY) * zoomLevel + centerY + panOffset.y;
 
-              return (
-                <TouchableOpacity
-                  key={icon.id}
-                  style={[
-                    styles.pinnedIcon,
-                    {
-                      left: displayX - 12,
-                      top: displayY - 12,
-                    },
-                  ]}
-                  onPress={() => removePinnedIcon(icon.id)}
-                >
-                  {icon.shape === 'circle' && (
-                    <View
-                      style={[
-                        styles.pinnedCircle,
-                        { backgroundColor: icon.color },
-                      ]}
-                    />
-                  )}
-                  {icon.shape === 'triangle' && (
-                    <View style={styles.triangleContainer}>
+                return (
+                  <TouchableOpacity
+                    key={icon.id}
+                    style={[
+                      styles.pinnedIcon,
+                      {
+                        left: displayX - 12,
+                        top: displayY - 12,
+                      },
+                    ]}
+                    onPress={() => removePinnedIcon(icon.id)}
+                  >
+                    {icon.shape === 'circle' && (
                       <View
                         style={[
-                          styles.pinnedTriangle,
-                          {
-                            borderBottomColor: icon.color,
-                            borderBottomWidth: 16,
-                            borderLeftWidth: 8,
-                            borderRightWidth: 8,
-                          },
-                        ]}
-                      />
-                    </View>
-                  )}
-                  {icon.shape === 'square' && (
-                    <View
-                      style={[
-                        styles.pinnedSquare,
-                        { backgroundColor: icon.color },
-                      ]}
-                    />
-                  )}
-                  {icon.shape === 'diamond' && (
-                    <View style={styles.diamondContainer}>
-                      <View
-                        style={[
-                          styles.pinnedDiamond,
+                          styles.pinnedCircle,
                           { backgroundColor: icon.color },
                         ]}
                       />
-                    </View>
-                  )}
-                </TouchableOpacity>
-              );
-            })}
-        </View>
+                    )}
+                    {icon.shape === 'triangle' && (
+                      <View style={styles.triangleContainer}>
+                        <View
+                          style={[
+                            styles.pinnedTriangle,
+                            {
+                              borderBottomColor: icon.color,
+                              borderBottomWidth: 16,
+                              borderLeftWidth: 8,
+                              borderRightWidth: 8,
+                            },
+                          ]}
+                        />
+                      </View>
+                    )}
+                    {icon.shape === 'square' && (
+                      <View
+                        style={[
+                          styles.pinnedSquare,
+                          { backgroundColor: icon.color },
+                        ]}
+                      />
+                    )}
+                    {icon.shape === 'diamond' && (
+                      <View style={styles.diamondContainer}>
+                        <View
+                          style={[
+                            styles.pinnedDiamond,
+                            { backgroundColor: icon.color },
+                          ]}
+                        />
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+          </View>
+        </PinchGestureHandler>
 
         {/* Display cursor indicator when a shape is selected */}
         {selectedShape && !isPanningEnabled && (
