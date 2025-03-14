@@ -1116,7 +1116,7 @@ export default function InspectionScreen() {
     <View style={styles.container}>
       <StatusBar style="dark" />
       {/* Header */}
-      {true && (
+      {false && (
         <View style={styles.header}>
           <TouchableOpacity
             onPress={() => router.replace('/home')}
@@ -1159,7 +1159,7 @@ export default function InspectionScreen() {
             >
               <MaterialCommunityIcons
                 name={direction.icon}
-                size={16}
+                size={14}
                 color={selectedDirection === direction.id ? 'white' : '#475569'}
               />
               <Text
@@ -1188,7 +1188,7 @@ export default function InspectionScreen() {
           >
             <Ionicons
               name="apps-outline"
-              size={16}
+              size={14}
               color={selectedPart === '' ? 'white' : '#475569'}
             />
             <Text
@@ -1270,23 +1270,10 @@ export default function InspectionScreen() {
       >
         <View style={styles.zoomControls}>
           <TouchableOpacity style={styles.zoomButton} onPress={zoomIn}>
-            <Ionicons name="add-circle" size={24} color="#2563eb" />
+            <Ionicons name="add-circle" size={40} color="#2563eb" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.zoomButton} onPress={zoomOut}>
-            <Ionicons name="remove-circle" size={24} color="#2563eb" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.zoomButton,
-              isPanningEnabled && { backgroundColor: '#dbeafe' },
-            ]}
-            onPress={togglePanMode}
-          >
-            <Ionicons
-              name="hand"
-              size={24}
-              color={isPanningEnabled ? '#2563eb' : '#64748b'}
-            />
+            <Ionicons name="remove-circle" size={40} color="#2563eb" />
           </TouchableOpacity>
         </View>
 
@@ -1897,7 +1884,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: '600',
     marginBottom: 8,
     color: '#334155',
@@ -1921,7 +1908,7 @@ const styles = StyleSheet.create({
   },
   directionText: {
     marginLeft: 4,
-    fontSize: 16,
+    fontSize: 20,
     color: '#475569',
     fontWeight: '500',
   },
@@ -1929,7 +1916,7 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   blueprintContainer: {
-    height: 180,
+    height: 300,
     margin: 16,
     borderRadius: 12,
     backgroundColor: 'white',
@@ -1992,7 +1979,7 @@ const styles = StyleSheet.create({
   },
   partText: {
     marginLeft: 8,
-    fontSize: 14,
+    fontSize: 20,
     color: '#475569',
     fontWeight: '500',
   },
@@ -2075,7 +2062,7 @@ const styles = StyleSheet.create({
   },
   checklistText: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 20,
     color: '#334155',
   },
   photoIndicator: {
