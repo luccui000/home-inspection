@@ -1882,6 +1882,9 @@ const styles = StyleSheet.create({
   directionContainer: {
     paddingHorizontal: 16,
     paddingVertical: 2,
+    borderBottomColor: '#ccc',
+    borderBottomWidth: 1,
+    paddingBottom: 6,
   },
   sectionTitle: {
     fontSize: 20,

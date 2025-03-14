@@ -1,0 +1,1 @@
+Trong giao diện danh sách checklist ở trong file app/inspection/index.tsx, phía trước checklist sẽ có
