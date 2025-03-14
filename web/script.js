@@ -710,11 +710,8 @@ function updateChecklist() {
               (item) => `
             <div class="checklist-item" data-id="${item.id}">
               <div class="checklist-header">
-                <div class="shape-icon" style="background-color: ${getItemColor(
-                  item.part,
-                  item.detail
-                )};">
-                  ${getItemShape(item.part, item.detail)}
+                <div class="shape-icon" style="background-color: ${getItemIconConfig(item.part, item.detail).color};">
+                  ${getShapeHTML(getItemIconConfig(item.part, item.detail))}
                 </div>
                 <div class="checklist-text">${item.name}</div>
                 ${
