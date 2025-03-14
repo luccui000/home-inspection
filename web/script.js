@@ -66,6 +66,7 @@ function setupBlueprintInteractions() {
   const zoomInButton = document.getElementById('zoom-in');
   const zoomOutButton = document.getElementById('zoom-out');
   const shapeButtons = document.querySelectorAll('.shape-button');
+  const blueprintImageContainer = document.querySelector('.blueprint-image-container');
 
   // Setup shape buttons
   shapeButtons.forEach(button => {
@@ -80,7 +81,33 @@ function setupBlueprintInteractions() {
 
   // Handle mouse move for dragging
   document.addEventListener('mousemove', handleDrag);
-  document.addEventListener('mouseup', endDrag);
+  document.addEventListener('mouseup', (e) => {
+    if (isDragging) {
+      const rect = blueprintImageContainer.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      // Check if drop is inside blueprint container
+      if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
+        endDrag(e);
+        
+        // Find matching checklist item
+        const matchingItem = checklist.find(item => {
+          const iconConfig = getItemIconConfig(item.part, item.detail);
+          return iconConfig.shape === selectedShape.shape && 
+                 iconConfig.color === selectedShape.color;
+        });
+
+        if (matchingItem) {
+          openIssueModal(matchingItem);
+        }
+      } else {
+        // Cancel drag if outside blueprint
+        isDragging = false;
+        dragIcon.remove();
+      }
+    }
+  });
 
   // Handle click on pinned icons
   document.addEventListener('click', (e) => {
@@ -750,46 +777,29 @@ function updateChecklist() {
   });
 }
 
-function getItemColor(part, detail) {
-  // Map colors based on part and detail
+function getItemIconConfig(part, detail) {
+  // Map combinations of part and detail to specific icons and colors
   if (part === 'roof') {
-    if (detail === 'structure') return '#ef4444';
-    if (detail === 'material') return '#f59e0b';
-    return '#3b82f6';
+    if (detail === 'structure') return { shape: 'triangle', color: '#ef4444' };
+    if (detail === 'material') return { shape: 'square', color: '#f59e0b' };
+    return { shape: 'circle', color: '#3b82f6' };
   }
-  if (part === 'walls') {
-    if (detail === 'paint') return '#10b981';
-    if (detail === 'structure') return '#8b5cf6';
-    if (detail === 'window') return '#0ea5e9';
-    if (detail === 'door') return '#f97316';
-    return '#3b82f6';
-  }
-  if (part === 'foundation') {
-    if (detail === 'structure') return '#ef4444';
-    return '#8b5cf6';
-  }
-  return '#64748b';
-}
 
-function getItemShape(part, detail) {
-  // Map shapes based on part and detail
-  if (part === 'roof') {
-    if (detail === 'structure') return '<div class="triangle-shape"></div>';
-    if (detail === 'material') return '';
-    return '';
-  }
   if (part === 'walls') {
-    if (detail === 'paint') return '';
-    if (detail === 'structure') return '<div class="triangle-shape"></div>';
-    if (detail === 'window') return '<div class="diamond-shape"></div>';
-    if (detail === 'door') return '';
-    return '';
+    if (detail === 'paint') return { shape: 'circle', color: '#10b981' };
+    if (detail === 'structure') return { shape: 'triangle', color: '#8b5cf6' };
+    if (detail === 'window') return { shape: 'diamond', color: '#0ea5e9' };
+    if (detail === 'door') return { shape: 'square', color: '#f97316' };
+    return { shape: 'circle', color: '#3b82f6' };
   }
+
   if (part === 'foundation') {
-    if (detail === 'structure') return '<div class="triangle-shape"></div>';
-    return '';
+    if (detail === 'structure') return { shape: 'triangle', color: '#ef4444' };
+    return { shape: 'square', color: '#8b5cf6' };
   }
-  return '';
+
+  // Default icon for any other combination
+  return { shape: 'circle', color: '#64748b' };
 }
 
 async function handleItemAction(itemId, action) {
