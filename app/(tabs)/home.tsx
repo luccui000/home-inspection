@@ -16,10 +16,10 @@ export default function Home() {
         >
           <Ionicons name="home-outline" size={32} color="#2563eb" />
           <View style={styles.projectInfo}>
-            <Text style={styles.projectName}>Dự án Villa Thảo Điền</Text>
-            <Text style={styles.projectStatus}>
-              Đang kiểm tra: 12/48 hạng mục
+            <Text style={styles.projectName}>
+              タオディエンヴィラプロジェクト
             </Text>
+            <Text style={styles.projectStatus}>検査中: 12/40 項目</Text>
           </View>
           <Ionicons name="chevron-forward" size={24} color="#64748b" />
         </TouchableOpacity>
@@ -27,8 +27,10 @@ export default function Home() {
         <TouchableOpacity style={styles.projectCard}>
           <Ionicons name="business-outline" size={32} color="#2563eb" />
           <View style={styles.projectInfo}>
-            <Text style={styles.projectName}>Dự án Chung cư Masteri</Text>
-            <Text style={styles.projectStatus}>Chưa bắt đầu</Text>
+            <Text style={styles.projectName}>
+              マステリアパートメントプロジェクト
+            </Text>
+            <Text style={styles.projectStatus}>未開始</Text>
           </View>
           <Ionicons name="chevron-forward" size={24} color="#64748b" />
         </TouchableOpacity>
@@ -39,7 +41,7 @@ export default function Home() {
         onPress={() => console.log('Add new project')}
       >
         <Ionicons name="add-circle" size={24} color="white" />
-        <Text style={styles.addButtonText}>Thêm dự án mới</Text>
+        <Text style={styles.addButtonText}>新規プロジェクトの追加</Text>
       </TouchableOpacity>
     </View>
   );

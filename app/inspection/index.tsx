@@ -56,24 +56,24 @@ interface IconConfig {
 
 // Dữ liệu mẫu
 const HOUSE_PARTS: HousePart[] = [
-  { id: 'roof', name: 'Mái trên', icon: 'home-roof' },
-  { id: 'walls', name: 'Tường', icon: 'wall' },
-  { id: 'foundation', name: 'Nền móng', icon: 'foundation' },
+  { id: 'roof', name: '屋根', icon: 'home-roof' },
+  { id: 'walls', name: '壁', icon: 'wall' },
+  { id: 'foundation', name: '基礎', icon: 'foundation' },
 ];
 
 const DETAIL_TYPES: DetailType[] = [
-  { id: 'paint', name: 'Sơn', icon: 'format-paint' },
-  { id: 'material', name: 'Vật liệu', icon: 'material-design' },
-  { id: 'structure', name: 'Kết cấu', icon: 'pillar' },
-  { id: 'window', name: 'Cửa sổ', icon: 'window-closed-variant' },
-  { id: 'door', name: 'Cửa', icon: 'door' },
+  { id: 'paint', name: '塗装', icon: 'format-paint' },
+  { id: 'material', name: '材料', icon: 'material-design' },
+  { id: 'structure', name: '構造', icon: 'pillar' },
+  { id: 'window', name: '窓', icon: 'window-closed-variant' },
+  { id: 'door', name: 'ドア', icon: 'door' },
 ];
 
 const DIRECTIONS = [
-  { id: 'north', name: 'Bắc', icon: 'arrow-up-bold' },
-  { id: 'east', name: 'Đông', icon: 'arrow-right-bold' },
-  { id: 'south', name: 'Nam', icon: 'arrow-down-bold' },
-  { id: 'west', name: 'Tây', icon: 'arrow-left-bold' },
+  { id: 'north', name: '北', icon: 'arrow-up-bold' },
+  { id: 'east', name: '東', icon: 'arrow-right-bold' },
+  { id: 'south', name: '南', icon: 'arrow-down-bold' },
+  { id: 'west', name: '西', icon: 'arrow-left-bold' },
 ];
 
 // Dữ liệu mẫu cho checklist
@@ -81,7 +81,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   // NORTH direction items (10 items)
   {
     id: 1,
-    name: 'Kiểm tra độ bám dính của lớp sơn mặt Bắc',
+    name: '北側壁面の塗装付着性の確認',
     part: 'walls',
     detail: 'paint',
     direction: 'north',
@@ -90,7 +90,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 2,
-    name: 'Kiểm tra dấu hiệu nấm mốc trên tường',
+    name: '壁のカビの兆候の確認',
     part: 'walls',
     detail: 'material',
     direction: 'north',
@@ -99,7 +99,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 3,
-    name: 'Kiểm tra cửa sổ mặt Bắc có bị rò rỉ không',
+    name: '北側窓の漏れの確認',
     part: 'walls',
     detail: 'window',
     direction: 'north',
@@ -108,7 +108,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 4,
-    name: 'Kiểm tra độ kín của cửa chính',
+    name: '玄関ドアの密閉性の確認',
     part: 'walls',
     detail: 'door',
     direction: 'north',
@@ -117,7 +117,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 5,
-    name: 'Kiểm tra hệ thống thoát nước mái phía Bắc',
+    name: '北側屋根の排水システムの確認',
     part: 'roof',
     detail: 'structure',
     direction: 'north',
@@ -126,7 +126,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 6,
-    name: 'Kiểm tra độ chắc chắn của móng phía Bắc',
+    name: '北側基礎の安定性の確認',
     part: 'foundation',
     detail: 'structure',
     direction: 'north',
@@ -135,7 +135,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 7,
-    name: 'Kiểm tra vết nứt trên tường phía Bắc',
+    name: '北側壁のひび割れの確認',
     part: 'walls',
     detail: 'structure',
     direction: 'north',
@@ -144,7 +144,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 8,
-    name: 'Kiểm tra độ ẩm của tường phía Bắc',
+    name: '北側壁の湿気レベルの確認',
     part: 'walls',
     detail: 'material',
     direction: 'north',
@@ -153,7 +153,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 9,
-    name: 'Kiểm tra trạng thái ngói mái phía Bắc',
+    name: '北側屋根の瓦の状態確認',
     part: 'roof',
     detail: 'material',
     direction: 'north',
@@ -162,7 +162,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 10,
-    name: 'Kiểm tra hệ thống cách nhiệt mặt Bắc',
+    name: '北側の断熱システムの確認',
     part: 'walls',
     detail: 'structure',
     direction: 'north',
@@ -173,7 +173,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   // EAST direction items (10 items)
   {
     id: 11,
-    name: 'Kiểm tra độ phai màu sơn mặt Đông',
+    name: '東側の塗装の色褪せの確認',
     part: 'walls',
     detail: 'paint',
     direction: 'east',
@@ -182,7 +182,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 12,
-    name: 'Kiểm tra kính cửa sổ phía Đông',
+    name: '東側窓ガラスの確認',
     part: 'walls',
     detail: 'window',
     direction: 'east',
@@ -191,7 +191,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 13,
-    name: 'Kiểm tra độ chắc chắn của cửa phía Đông',
+    name: '東側ドアの耐久性の確認',
     part: 'walls',
     detail: 'door',
     direction: 'east',
@@ -200,7 +200,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 14,
-    name: 'Kiểm tra vết nứt trên móng phía Đông',
+    name: '東側基礎のひび割れの確認',
     part: 'foundation',
     detail: 'structure',
     direction: 'east',
@@ -209,7 +209,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 15,
-    name: 'Kiểm tra tình trạng mái hiên phía Đông',
+    name: '東側庇の状態確認',
     part: 'roof',
     detail: 'structure',
     direction: 'east',
@@ -218,7 +218,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 16,
-    name: 'Kiểm tra đường ống thoát nước mưa',
+    name: '雨どい排水管の確認',
     part: 'walls',
     detail: 'material',
     direction: 'east',
@@ -227,7 +227,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 17,
-    name: 'Kiểm tra tình trạng ngói mái phía Đông',
+    name: '東側屋根の瓦の状態確認',
     part: 'roof',
     detail: 'material',
     direction: 'east',
@@ -236,7 +236,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 18,
-    name: 'Kiểm tra các mối nối trên tường Đông',
+    name: '東側壁の接合部の確認',
     part: 'walls',
     detail: 'structure',
     direction: 'east',
@@ -245,7 +245,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 19,
-    name: 'Kiểm tra độ thẳng của tường phía Đông',
+    name: '東側壁の垂直性の確認',
     part: 'walls',
     detail: 'structure',
     direction: 'east',
@@ -254,7 +254,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 20,
-    name: 'Kiểm tra hệ thống chống thấm phía Đông',
+    name: '東側防水システムの確認',
     part: 'foundation',
     detail: 'material',
     direction: 'east',
@@ -265,7 +265,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   // SOUTH direction items (10 items)
   {
     id: 21,
-    name: 'Kiểm tra độ bong tróc của sơn mặt Nam',
+    name: '南側壁面の塗装剥がれの確認',
     part: 'walls',
     detail: 'paint',
     direction: 'south',
@@ -274,7 +274,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 22,
-    name: 'Kiểm tra hệ thống che nắng cửa sổ',
+    name: '窓の日よけシステムの確認',
     part: 'walls',
     detail: 'window',
     direction: 'south',
@@ -283,7 +283,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 23,
-    name: 'Kiểm tra độ cách nhiệt của cửa mặt Nam',
+    name: '南側ドアの断熱性の確認',
     part: 'walls',
     detail: 'door',
     direction: 'south',
@@ -292,7 +292,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 24,
-    name: 'Kiểm tra hiện tượng co ngót của móng',
+    name: '基礎の収縮現象の確認',
     part: 'foundation',
     detail: 'structure',
     direction: 'south',
@@ -301,7 +301,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 25,
-    name: 'Kiểm tra độ cách nhiệt của mái Nam',
+    name: '南側屋根の断熱性の確認',
     part: 'roof',
     detail: 'material',
     direction: 'south',
@@ -310,7 +310,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 26,
-    name: 'Kiểm tra tình trạng của cửa ra ban công',
+    name: 'バルコニードアの状態確認',
     part: 'walls',
     detail: 'door',
     direction: 'south',
@@ -319,7 +319,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 27,
-    name: 'Kiểm tra chất lượng gạch ốp tường',
+    name: '壁タイルの品質確認',
     part: 'walls',
     detail: 'material',
     direction: 'south',
@@ -328,7 +328,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 28,
-    name: 'Kiểm tra khả năng thoát nước của mái',
+    name: '屋根の排水能力の確認',
     part: 'roof',
     detail: 'structure',
     direction: 'south',
@@ -337,7 +337,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 29,
-    name: 'Kiểm tra độ lún của nền phía Nam',
+    name: '南側基礎の沈下の確認',
     part: 'foundation',
     detail: 'structure',
     direction: 'south',
@@ -346,7 +346,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 30,
-    name: 'Kiểm tra nước đọng quanh móng nhà',
+    name: '基礎周りの水溜りの確認',
     part: 'foundation',
     detail: 'material',
     direction: 'south',
@@ -357,7 +357,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   // WEST direction items (10 items)
   {
     id: 31,
-    name: 'Kiểm tra khả năng chống nóng của sơn',
+    name: '西側塗装の耐熱性の確認',
     part: 'walls',
     detail: 'paint',
     direction: 'west',
@@ -366,7 +366,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 32,
-    name: 'Kiểm tra độ kín của cửa sổ chịu mưa',
+    name: '雨に強い窓の密閉性確認',
     part: 'walls',
     detail: 'window',
     direction: 'west',
@@ -375,7 +375,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 33,
-    name: 'Kiểm tra gioăng cao su của cửa phía Tây',
+    name: '西側ドアのゴムパッキンの確認',
     part: 'walls',
     detail: 'door',
     direction: 'west',
@@ -384,7 +384,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 34,
-    name: 'Kiểm tra thoát nước quanh móng phía Tây',
+    name: '西側基礎周りの排水確認',
     part: 'foundation',
     detail: 'structure',
     direction: 'west',
@@ -393,7 +393,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 35,
-    name: 'Kiểm tra độ bền của vật liệu mái Tây',
+    name: '西側屋根材の耐久性確認',
     part: 'roof',
     detail: 'material',
     direction: 'west',
@@ -402,7 +402,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 36,
-    name: 'Kiểm tra khả năng chống thấm của tường',
+    name: '壁の防水性能の確認',
     part: 'walls',
     detail: 'material',
     direction: 'west',
@@ -411,7 +411,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 37,
-    name: 'Kiểm tra hệ thống thoát nước mái phía Tây',
+    name: '西側屋根の排水システム確認',
     part: 'roof',
     detail: 'structure',
     direction: 'west',
@@ -420,7 +420,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 38,
-    name: 'Kiểm tra cây cối ảnh hưởng đến móng',
+    name: '基礎に影響する樹木の確認',
     part: 'foundation',
     detail: 'material',
     direction: 'west',
@@ -429,7 +429,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 39,
-    name: 'Kiểm tra vết nứt do co giãn nhiệt',
+    name: '熱膨張によるひび割れの確認',
     part: 'walls',
     detail: 'structure',
     direction: 'west',
@@ -438,7 +438,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   },
   {
     id: 40,
-    name: 'Kiểm tra hệ thống chống sét trên mái',
+    name: '屋根の避雷システムの確認',
     part: 'roof',
     detail: 'structure',
     direction: 'west',
@@ -707,7 +707,7 @@ export default function InspectionScreen() {
     const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
 
     if (permissionResult.granted === false) {
-      alert('Bạn cần cấp quyền truy cập máy ảnh!');
+      alert('カメラへのアクセス許可が必要です！');
       return;
     }
 
@@ -755,7 +755,7 @@ export default function InspectionScreen() {
     const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
 
     if (permissionResult.granted === false) {
-      alert('Bạn cần cấp quyền truy cập máy ảnh!');
+      alert('カメラへのアクセス許可が必要です！');
       return;
     }
 
@@ -1125,7 +1125,7 @@ export default function InspectionScreen() {
             <Ionicons name="arrow-back" size={24} color="#1e293b" />
           </TouchableOpacity>
 
-          <Text style={styles.headerTitle}>Kiểm tra dự án</Text>
+          <Text style={styles.headerTitle}>物件点検</Text>
           <TouchableOpacity>
             <Ionicons name="ellipsis-vertical" size={24} color="#1e293b" />
           </TouchableOpacity>
@@ -1135,7 +1135,7 @@ export default function InspectionScreen() {
       <View style={styles.progressContainer}>
         <View style={styles.progressTextContainer}>
           <Text style={styles.progressText}>
-            Tiến độ: {completedItems}/{totalItems} hạng mục
+            進捗状況: {completedItems}/{totalItems} 項目
           </Text>
           <Text style={styles.progressPercentage}>{progress}%</Text>
         </View>
@@ -1197,7 +1197,7 @@ export default function InspectionScreen() {
                 selectedPart === '' && styles.selectedPartText,
               ]}
             >
-              Tất cả
+              全て
             </Text>
           </TouchableOpacity>
 
@@ -1395,7 +1395,7 @@ export default function InspectionScreen() {
         {selectedShape && !isPanningEnabled && (
           <View style={styles.blueprintHelpText}>
             <Text style={styles.blueprintHelpTextContent}>
-              Chọn vị trí để đặt ký hiệu
+              シンボルを配置する場所を選択します
             </Text>
           </View>
         )}
@@ -1407,7 +1407,7 @@ export default function InspectionScreen() {
             onPress={markAllCompleteAndOpenCamera}
           >
             <Ionicons name="camera" size={16} color="white" />
-            <Text style={styles.allOkText}>Tất cả OK</Text>
+            <Text style={styles.allOkText}>すべてOK</Text>
           </TouchableOpacity>
         )}
 
@@ -1420,7 +1420,7 @@ export default function InspectionScreen() {
               onPress={openAllOKCamera}
             >
               <Ionicons name="checkmark-circle" size={16} color="white" />
-              <Text style={styles.allOkText}>Tất cả OK</Text>
+              <Text style={styles.allOkText}>すべてOK</Text>
             </TouchableOpacity>
 
             {/* View Photos button at bottom left */}
@@ -1429,7 +1429,7 @@ export default function InspectionScreen() {
               onPress={viewOverviewPhotos}
             >
               <Ionicons name="images-outline" size={16} color="white" />
-              <Text style={styles.allOkText}>Xem ảnh</Text>
+              <Text style={styles.allOkText}>写真を見る</Text>
             </TouchableOpacity>
           </>
         )}
@@ -1515,7 +1515,7 @@ export default function InspectionScreen() {
       </View>
       {/* Checklist */}
       <View style={styles.checklistContainer}>
-        <Text style={styles.sectionTitle}>Danh sách kiểm tra:</Text>
+        <Text style={styles.sectionTitle}>チェックリスト:</Text>
 
         <ScrollView style={styles.checklist}>
           {Object.entries(groupChecklistByDetailType()).map(
@@ -1656,7 +1656,7 @@ export default function InspectionScreen() {
             >
               <View style={styles.modalHeader}>
                 <View style={styles.modalHandleBar} />
-                <Text style={styles.modalTitle}>Báo cáo vấn đề</Text>
+                <Text style={styles.modalTitle}>問題を報告</Text>
                 <TouchableOpacity
                   onPress={() => {
                     Keyboard.dismiss();
@@ -1679,12 +1679,12 @@ export default function InspectionScreen() {
                     </Text>
 
                     <View style={styles.noteContainer}>
-                      <Text style={styles.noteLabel}>Ghi chú vấn đề:</Text>
+                      <Text style={styles.noteLabel}>問題メモ:</Text>
                       <View style={styles.noteInputContainer}>
                         <TextInput
                           style={styles.noteInput}
                           multiline={true}
-                          placeholder="Mô tả vấn đề phát hiện..."
+                          placeholder="問題の詳細を記入..."
                           value={note}
                           onChangeText={setNote}
                           returnKeyType="done"
@@ -1695,13 +1695,13 @@ export default function InspectionScreen() {
                     </View>
 
                     <View style={styles.modalPhotoSection}>
-                      <Text style={styles.photoLabel}>Ảnh chụp vấn đề:</Text>
+                      <Text style={styles.photoLabel}>撮影した写真:</Text>
 
                       {/* Only show ScrollView when there are photos */}
                       {currentItem?.photos?.length > 0 && (
                         <View>
                           <Text style={styles.photoGalleryLabel}>
-                            Ảnh đã chụp ({currentItem.photos.length}):
+                            撮影した写真 ({currentItem.photos.length}):
                           </Text>
                           <ScrollView
                             horizontal
@@ -1740,7 +1740,7 @@ export default function InspectionScreen() {
                         onPress={() => takePicture(currentItem.id)}
                       >
                         <Ionicons name="camera" size={24} color="white" />
-                        <Text style={styles.takePictureText}>Chụp ảnh</Text>
+                        <Text style={styles.takePictureText}>写真を撮る</Text>
                       </TouchableOpacity>
                     </View>
 
@@ -1748,7 +1748,7 @@ export default function InspectionScreen() {
                       style={styles.saveButton}
                       onPress={saveIssue}
                     >
-                      <Text style={styles.saveButtonText}>Lưu vấn đề</Text>
+                      <Text style={styles.saveButtonText}>保存</Text>
                     </TouchableOpacity>
 
                     {/* Add padding at the bottom to ensure content is visible above keyboard */}
@@ -1796,7 +1796,7 @@ export default function InspectionScreen() {
           >
             <View style={styles.modalHeader}>
               <View style={styles.modalHandleBar} />
-              <Text style={styles.modalTitle}>Ảnh đã chụp</Text>
+              <Text style={styles.modalTitle}>撮影した写真</Text>
               <TouchableOpacity
                 onPress={() => {
                   setIsPhotoGalleryVisible(false);
@@ -1894,7 +1894,7 @@ const styles = StyleSheet.create({
   },
   directionContainer: {
     paddingHorizontal: 16,
-    paddingVertical: 6,
+    paddingVertical: 2,
   },
   sectionTitle: {
     fontSize: 16,
@@ -1921,7 +1921,7 @@ const styles = StyleSheet.create({
   },
   directionText: {
     marginLeft: 4,
-    fontSize: 14,
+    fontSize: 16,
     color: '#475569',
     fontWeight: '500',
   },
