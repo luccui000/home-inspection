@@ -510,7 +510,7 @@ function updateChecklist() {
           </div>
 
           ${items.map(item => `
-            <div class="checklist-item">
+            <div class="checklist-item" data-id="${item.id}">
               <div class="checklist-header">
                 <div class="shape-icon" style="background-color: ${getItemColor(item.part, item.detail)};">
                   ${getItemShape(item.part, item.detail)}
@@ -545,10 +545,16 @@ function updateChecklist() {
 
   // Add event listeners to action buttons
   document.querySelectorAll('.action-button').forEach(button => {
-    button.addEventListener('click', () => {
+    button.addEventListener('click', (e) => {
+      e.stopPropagation();
       const itemId = button.closest('.checklist-item').dataset.id;
-      handleItemAction(itemId, button.classList.contains('check-button') ? 'check' : 
-        button.classList.contains('photo-button') ? 'photo' : 'issue');
+      let action = 'check';
+      if (button.classList.contains('photo-button')) {
+        action = 'photo';
+      } else if (button.classList.contains('issue-button')) {
+        action = 'issue';
+      }
+      handleItemAction(itemId, action);
     });
   });
 }
@@ -679,26 +685,45 @@ function openIssueModal(item) {
 }
 
 function openPhotoGallery(photos) {
+  // Remove existing gallery if any
+  const existingGallery = document.querySelector('.photo-gallery');
+  if (existingGallery) {
+    existingGallery.remove();
+  }
+
   const gallery = document.createElement('div');
   gallery.className = 'photo-gallery';
   
+  // Add close button
+  const closeButton = document.createElement('button');
+  closeButton.className = 'close-gallery-button';
+  closeButton.innerHTML = '&times;';
+  closeButton.onclick = () => gallery.remove();
+  gallery.appendChild(closeButton);
+
   photos.forEach((photo, index) => {
     const photoContainer = document.createElement('div');
     photoContainer.className = 'photo-container';
     
     const img = document.createElement('img');
     img.src = photo;
+    img.onerror = () => {
+      img.src = 'assets/images/placeholder.jpg'; // Fallback image
+    };
     
     const deleteButton = document.createElement('button');
     deleteButton.className = 'delete-photo-button';
     deleteButton.innerHTML = '&times;';
-    deleteButton.onclick = () => {
-      photos.splice(index, 1);
-      updateChecklist();
-      updateProgress();
-      gallery.remove();
-      if (photos.length > 0) {
-        openPhotoGallery(photos);
+    deleteButton.onclick = (e) => {
+      e.stopPropagation();
+      if (confirm('Bạn có chắc chắn muốn xoá ảnh này?')) {
+        photos.splice(index, 1);
+        updateChecklist();
+        updateProgress();
+        gallery.remove();
+        if (photos.length > 0) {
+          openPhotoGallery(photos);
+        }
       }
     };
     
@@ -707,6 +732,12 @@ function openPhotoGallery(photos) {
     gallery.appendChild(photoContainer);
   });
   
+  // Add overlay
+  const overlay = document.createElement('div');
+  overlay.className = 'gallery-overlay';
+  overlay.onclick = () => gallery.remove();
+  
+  document.body.appendChild(overlay);
   document.body.appendChild(gallery);
 }
 
