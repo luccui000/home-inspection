@@ -1,0 +1,230 @@
+:root {
+  --primary-color: #2563eb;
+  --secondary-color: #f1f5f9;
+  --text-color: #1e293b;
+  --background-color: #f8fafc;
+  --border-color: #e2e8f0;
+  --success-color: #10b981;
+  --error-color: #ef4444;
+  --white: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  padding-top: 70px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* Progress Section */
+.progress-container {
+  padding: 16px;
+}
+
+.progress-text-container {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.progress-text {
+  font-size: 12px;
+  color: #475569;
+  font-weight: 500;
+}
+
+.progress-percentage {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.progress-bar-background {
+  height: 8px;
+  background-color: var(--border-color);
+  border-radius: 4px;
+}
+
+.progress-bar {
+  height: 8px;
+  background-color: var(--primary-color);
+  border-radius: 4px;
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+/* Direction Selector */
+.direction-container {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.direction-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.direction-button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  background-color: var(--secondary-color);
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.direction-button.active {
+  background-color: var(--primary-color);
+  color: var(--white);
+}
+
+.direction-button span {
+  margin-left: 4px;
+  font-size: 14px;
+}
+
+/* Blueprint Section */
+.blueprint-container {
+  height: 300px;
+  margin: 16px;
+  border-radius: 12px;
+  background-color: var(--white);
+  position: relative;
+  overflow: hidden;
+}
+
+.blueprint-image-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-origin: center;
+  transition: transform 0.3s ease;
+}
+
+.blueprint {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 12px;
+}
+
+.zoom-controls {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 8px;
+}
+
+.zoom-button {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+}
+
+.camera-button {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background-color: #6366f1;
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--white);
+  border: none;
+  cursor: pointer;
+}
+
+/* Checklist Section */
+.checklist-container {
+  padding: 16px;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #334155;
+}
+
+.checklist {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* Modals */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: none;
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+
+.modal-content {
+  background-color: var(--white);
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  padding: 20px;
+  width: 100%;
+  max-height: 90vh;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal-overlay.active .modal-content {
+  transform: translateY(0);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.close-modal {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* Add more styles as needed */
