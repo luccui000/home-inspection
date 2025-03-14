@@ -19,13 +19,12 @@ body {
   font-family: Arial, sans-serif;
   background-color: var(--background-color);
   color: var(--text-color);
-  padding-top: 70px;
 }
 
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 16px;
+  padding: 0 5px;
 }
 
 /* Progress Section */
@@ -67,8 +66,10 @@ body {
 
 /* Direction Selector */
 .direction-container {
-  padding: 16px;
+  padding-left: 16px;
+  padding-right: 16px;
   border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
 }
 
 .direction-buttons {
