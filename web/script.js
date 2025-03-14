@@ -704,7 +704,7 @@ function openIssueModal(item) {
       .map(
         (photo, index) => `
       <div class="photo-item">
-        <img src="${photo}" alt="Issue photo ${index + 1}">
+        <img src="${photo}" alt="Issue photo ${index + 1}" onclick="openPhotoGallery(${JSON.stringify(item.photos)}, ${index})">
         <button class="delete-photo-button" onclick="deleteIssuePhoto(${
           item.id
         }, ${index})">
@@ -787,7 +787,7 @@ function deleteIssuePhoto(itemId, photoIndex) {
   }
 }
 
-function openPhotoGallery(photos) {
+function openPhotoGallery(photos, startIndex = 0) {
   // Remove existing gallery if any
   const existingGallery = document.querySelector('.photo-gallery');
   if (existingGallery) {
@@ -804,14 +804,19 @@ function openPhotoGallery(photos) {
   closeButton.onclick = () => gallery.remove();
   gallery.appendChild(closeButton);
 
+  // Add photo list
+  const photoList = document.createElement('div');
+  photoList.className = 'photo-list';
+  
   photos.forEach((photo, index) => {
     const photoContainer = document.createElement('div');
     photoContainer.className = 'photo-container';
+    photoContainer.style.transform = `translateX(${(index - startIndex) * 100}%)`;
 
     const img = document.createElement('img');
     img.src = photo;
     img.onerror = () => {
-      img.src = 'assets/images/placeholder.jpg'; // Fallback image
+      img.src = 'assets/images/placeholder.jpg';
     };
 
     const deleteButton = document.createElement('button');
@@ -819,7 +824,7 @@ function openPhotoGallery(photos) {
     deleteButton.innerHTML = '&times;';
     deleteButton.onclick = (e) => {
       e.stopPropagation();
-      if (confirm('Bạn có chắc chắn muốn xoá ảnh này?')) {
+      if (confirm('この写真を削除してもよろしいですか？')) {
         photos.splice(index, 1);
         updateChecklist();
         updateProgress();
@@ -832,8 +837,10 @@ function openPhotoGallery(photos) {
 
     photoContainer.appendChild(img);
     photoContainer.appendChild(deleteButton);
-    gallery.appendChild(photoContainer);
+    photoList.appendChild(photoContainer);
   });
+
+  gallery.appendChild(photoList);
 
   // Add overlay
   const overlay = document.createElement('div');
