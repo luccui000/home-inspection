@@ -317,21 +317,22 @@ body {
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
   display: none;
-  justify-content: flex-end;
-  align-items: flex-end;
+  justify-content: center;
+  align-items: center;
   z-index: 1000;
 }
 
 .modal-content {
   background-color: var(--white);
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
-  padding: 20px;
-  width: 100%;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 500px;
   max-height: 90vh;
-  transform: translateY(100%);
-  transition: transform 0.3s ease;
-  overflow-y: auto;
+  transform: scale(0.9);
+  opacity: 0;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .modal-overlay.active {
@@ -339,32 +340,97 @@ body {
 }
 
 .modal-overlay.active .modal-content {
-  transform: translateY(0);
+  transform: scale(1);
+  opacity: 1;
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--border-color);
+  padding: 16px;
+  background-color: var(--primary-color);
 }
 
 .modal-title {
   font-size: 18px;
   font-weight: 600;
-  color: var(--text-color);
+  color: var(--white);
+  margin: 0;
 }
 
 .close-modal {
   background: none;
   border: none;
+  color: var(--white);
+  padding: 8px;
+  border-radius: 50%;
   cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.close-modal:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.modal-body {
+  padding: 16px;
+}
+
+.note-container {
+  margin-bottom: 20px;
+}
+
+.note-label {
+  display: block;
+  font-size: 14px;
+  color: var(--text-color);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.note-input {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 14px;
+  resize: vertical;
+}
+
+.note-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.save-button {
+  width: 100%;
+  background-color: var(--primary-color);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.save-button:hover {
+  background-color: #1d4ed8;
+}
+
+.save-button:active {
+  background-color: #1e40af;
 }
 
 /* Photo Section */
 .photo-section {
   margin: 20px 0;
+  border-top: 1px solid var(--border-color);
+  padding-top: 20px;
 }
 
 .photo-controls {
@@ -378,11 +444,21 @@ body {
   color: white;
   border: none;
   border-radius: 8px;
-  padding: 10px 20px;
+  padding: 12px 24px;
   display: flex;
   align-items: center;
   gap: 8px;
   cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.take-picture-button:hover {
+  background-color: #1d4ed8;
+}
+
+.take-picture-button:active {
+  background-color: #1e40af;
 }
 
 .photo-list-container {
@@ -390,16 +466,17 @@ body {
 }
 
 .photo-list-title {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--text-color);
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .photo-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 10px;
+  gap: 12px;
+  padding: 4px;
 }
 
 .photo-item {
@@ -407,6 +484,12 @@ body {
   padding-top: 100%;
   border-radius: 8px;
   overflow: hidden;
+  border: 1px solid var(--border-color);
+  transition: transform 0.2s ease;
+}
+
+.photo-item:hover {
+  transform: translateY(-2px);
 }
 
 .photo-item img {
@@ -432,6 +515,11 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.delete-photo-button:hover {
+  background-color: #dc2626;
 }
 
 /* Camera Preview */
