@@ -82,6 +82,26 @@ function setupBlueprintInteractions() {
   document.addEventListener('mousemove', handleDrag);
   document.addEventListener('mouseup', endDrag);
 
+  // Handle click on pinned icons
+  document.addEventListener('click', (e) => {
+    const pinnedIcon = e.target.closest('.pinned-icon');
+    if (pinnedIcon) {
+      const iconId = pinnedIcon.dataset.id;
+      const icon = pinnedIcons.find(i => i.id === iconId);
+      if (icon) {
+        // Find matching checklist item
+        const matchingItem = checklist.find(item => 
+          getItemIconConfig(item.part, item.detail).shape === icon.shape &&
+          getItemIconConfig(item.part, item.detail).color === icon.color
+        );
+        
+        if (matchingItem) {
+          openIssueModal(matchingItem);
+        }
+      }
+    }
+  });
+
   zoomInButton.addEventListener('click', () => {
     if (zoomLevel < 3) {
       zoomLevel += 0.25;
@@ -164,17 +184,29 @@ function endDrag(e) {
   const adjustedY = (e.clientY - rect.top - centerY - panOffset.y) / zoomLevel + centerY;
   
   // Add the icon to pinned icons
-  pinnedIcons.push({
+  const newIcon = {
     id: Date.now().toString(),
     shape: selectedShape.shape,
     color: selectedShape.color,
     x: adjustedX,
     y: adjustedY,
     direction: selectedDirection
-  });
+  };
+  
+  pinnedIcons.push(newIcon);
   
   // Update blueprint display
   updateBlueprintIcons();
+
+  // Find matching checklist item
+  const matchingItem = checklist.find(item => 
+    getItemIconConfig(item.part, item.detail).shape === newIcon.shape &&
+    getItemIconConfig(item.part, item.detail).color === newIcon.color
+  );
+  
+  if (matchingItem) {
+    openIssueModal(matchingItem);
+  }
 }
 
 function updateBlueprintIcons() {
