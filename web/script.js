@@ -517,7 +517,7 @@ function updateChecklist() {
                 </div>
                 <div class="checklist-text">${item.name}</div>
                 ${item.photos.length > 0 ? `
-                  <div class="photo-indicator">
+                  <div class="photo-indicator" onclick="openPhotoGallery(${JSON.stringify(item.photos)})">
                     <span class="material-icons">images</span>
                     <span class="photo-count">${item.photos.length}</span>
                   </div>
@@ -595,7 +595,7 @@ function getItemShape(part, detail) {
   return '';
 }
 
-function handleItemAction(itemId, action) {
+async function handleItemAction(itemId, action) {
   const item = checklist.find(i => i.id === Number(itemId));
   if (!item) return;
 
@@ -604,15 +604,110 @@ function handleItemAction(itemId, action) {
       item.status = item.status === 'completed' ? 'pending' : 'completed';
       break;
     case 'photo':
-      // Handle photo action
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const video = document.createElement('video');
+        video.srcObject = stream;
+        video.play();
+        
+        // Show camera preview
+        const previewContainer = document.createElement('div');
+        previewContainer.className = 'camera-preview';
+        previewContainer.appendChild(video);
+        
+        const captureButton = document.createElement('button');
+        captureButton.textContent = 'Chụp ảnh';
+        captureButton.className = 'capture-button';
+        
+        previewContainer.appendChild(captureButton);
+        document.body.appendChild(previewContainer);
+        
+        captureButton.addEventListener('click', () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          canvas.getContext('2d').drawImage(video, 0, 0);
+          
+          const imageUrl = canvas.toDataURL('image/png');
+          item.photos.push(imageUrl);
+          
+          // Clean up
+          stream.getTracks().forEach(track => track.stop());
+          previewContainer.remove();
+          
+          updateChecklist();
+          updateProgress();
+        });
+      } catch (error) {
+        alert('Không thể truy cập camera. Vui lòng cho phép quyền sử dụng camera.');
+      }
       break;
     case 'issue':
-      // Handle issue action
+      // Open issue modal
+      openIssueModal(item);
       break;
   }
 
   updateChecklist();
   updateProgress();
+}
+
+function openIssueModal(item) {
+  const modal = document.getElementById('issue-modal-overlay');
+  const title = document.getElementById('modal-item-title');
+  const noteInput = document.getElementById('note-input');
+  
+  title.textContent = item.name;
+  noteInput.value = item.note || '';
+  
+  modal.classList.add('active');
+  
+  // Handle save
+  const saveButton = modal.querySelector('.save-button');
+  saveButton.onclick = () => {
+    item.note = noteInput.value;
+    item.status = 'issue';
+    modal.classList.remove('active');
+    updateChecklist();
+    updateProgress();
+  };
+  
+  // Handle close
+  modal.querySelector('.close-modal').onclick = () => {
+    modal.classList.remove('active');
+  };
+}
+
+function openPhotoGallery(photos) {
+  const gallery = document.createElement('div');
+  gallery.className = 'photo-gallery';
+  
+  photos.forEach((photo, index) => {
+    const photoContainer = document.createElement('div');
+    photoContainer.className = 'photo-container';
+    
+    const img = document.createElement('img');
+    img.src = photo;
+    
+    const deleteButton = document.createElement('button');
+    deleteButton.className = 'delete-photo-button';
+    deleteButton.innerHTML = '&times;';
+    deleteButton.onclick = () => {
+      photos.splice(index, 1);
+      updateChecklist();
+      updateProgress();
+      gallery.remove();
+      if (photos.length > 0) {
+        openPhotoGallery(photos);
+      }
+    };
+    
+    photoContainer.appendChild(img);
+    photoContainer.appendChild(deleteButton);
+    gallery.appendChild(photoContainer);
+  });
+  
+  document.body.appendChild(gallery);
 }
 
 function updateProgress() {
