@@ -826,6 +826,10 @@ function openIssueModal(item) {
   const title = document.getElementById('modal-item-title');
   const noteInput = document.getElementById('note-input');
   const photoList = document.getElementById('issue-photo-list');
+  const cameraPreview = document.getElementById('camera-preview');
+
+  // Hide camera preview if it's showing
+  cameraPreview.style.display = 'none';
 
   // Set modal content
   title.textContent = item.name;
@@ -861,7 +865,7 @@ function openIssueModal(item) {
 
       video.srcObject = stream;
       video.play();
-      cameraPreview.classList.add('active');
+      cameraPreview.style.display = 'flex';
 
       // Handle capture
       const captureButton = document.getElementById('capture-button');
@@ -877,14 +881,14 @@ function openIssueModal(item) {
 
         // Clean up
         stream.getTracks().forEach((track) => track.stop());
-        cameraPreview.classList.remove('active');
+        cameraPreview.style.display = 'none';
       };
 
       // Handle close camera
       const closeCameraButton = document.getElementById('close-camera-button');
       closeCameraButton.onclick = () => {
         stream.getTracks().forEach((track) => track.stop());
-        cameraPreview.classList.remove('active');
+        cameraPreview.style.display = 'none';
       };
     } catch (error) {
       alert('カメラへのアクセス許可が必要です！');
