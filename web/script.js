@@ -774,6 +774,21 @@ function updateChecklist() {
   });
 }
 
+function getShapeHTML(iconConfig) {
+  switch(iconConfig.shape) {
+    case 'circle':
+      return `<div class="circle-shape" style="background-color: ${iconConfig.color};"></div>`;
+    case 'triangle':
+      return `<div class="triangle-shape" style="border-bottom-color: ${iconConfig.color};"></div>`;
+    case 'square':
+      return `<div class="square-shape" style="background-color: ${iconConfig.color};"></div>`;
+    case 'diamond':
+      return `<div class="diamond-shape" style="background-color: ${iconConfig.color};"></div>`;
+    default:
+      return `<div class="circle-shape" style="background-color: ${iconConfig.color};"></div>`;
+  }
+}
+
 function getItemIconConfig(part, detail) {
   // Map combinations of part and detail to specific icons and colors
   if (part === 'roof') {
