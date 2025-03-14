@@ -319,6 +319,7 @@ body {
   display: none;
   justify-content: flex-end;
   align-items: flex-end;
+  z-index: 1000;
 }
 
 .modal-content {
@@ -330,6 +331,7 @@ body {
   max-height: 90vh;
   transform: translateY(100%);
   transition: transform 0.3s ease;
+  overflow-y: auto;
 }
 
 .modal-overlay.active {
@@ -357,6 +359,132 @@ body {
 .close-modal {
   background: none;
   border: none;
+  cursor: pointer;
+}
+
+/* Photo Section */
+.photo-section {
+  margin: 20px 0;
+}
+
+.photo-controls {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.take-picture-button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.photo-list-container {
+  margin-top: 20px;
+}
+
+.photo-list-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 10px;
+}
+
+.photo-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 10px;
+}
+
+.photo-item {
+  position: relative;
+  padding-top: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.photo-item img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.delete-photo-button {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background-color: var(--error-color);
+  color: white;
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Camera Preview */
+.camera-preview {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+}
+
+.camera-preview.active {
+  display: flex;
+}
+
+#camera-video {
+  width: 100%;
+  max-width: 500px;
+  border-radius: 10px;
+}
+
+.capture-button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.close-camera-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: var(--error-color);
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
 }
 

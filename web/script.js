@@ -493,58 +493,84 @@ function updateChecklist() {
 
   checklistContainer.innerHTML = Object.entries(groupedItems)
     .map(([detailType, items]) => {
-      const completedCount = items.filter(item => 
-        item.status === 'completed'
+      const completedCount = items.filter(
+        (item) => item.status === 'completed'
       ).length;
 
-      const detailInfo = DETAIL_TYPES.find(d => d.id === detailType);
-      
+      const detailInfo = DETAIL_TYPES.find((d) => d.id === detailType);
+
       return `
         <div class="checklist-group">
           <div class="checklist-subtitle-container">
             <span class="material-icons">${detailInfo?.icon || 'circle'}</span>
-            <span class="checklist-subtitle">${detailInfo?.name || detailType}</span>
+            <span class="checklist-subtitle">${
+              detailInfo?.name || detailType
+            }</span>
             <div class="completion-count-container">
-              <span class="completion-count">${completedCount}/${items.length}</span>
+              <span class="completion-count">${completedCount}/${
+        items.length
+      }</span>
             </div>
           </div>
 
-          ${items.map(item => `
+          ${items
+            .map(
+              (item) => `
             <div class="checklist-item" data-id="${item.id}">
               <div class="checklist-header">
-                <div class="shape-icon" style="background-color: ${getItemColor(item.part, item.detail)};">
+                <div class="shape-icon" style="background-color: ${getItemColor(
+                  item.part,
+                  item.detail
+                )};">
                   ${getItemShape(item.part, item.detail)}
                 </div>
                 <div class="checklist-text">${item.name}</div>
-                ${item.photos.length > 0 ? `
-                  <div class="photo-indicator" onclick="openPhotoGallery(${JSON.stringify(item.photos)})">
+                ${
+                  item.photos.length > 0
+                    ? `
+                  <div class="photo-indicator" onclick="openPhotoGallery(${JSON.stringify(
+                    item.photos
+                  )})">
                     <span class="material-icons">images</span>
                     <span class="photo-count">${item.photos.length}</span>
                   </div>
-                ` : ''}
+                `
+                    : ''
+                }
               </div>
               <div class="checklist-actions">
-                <button class="action-button ${item.status === 'completed' ? 'active-check-button' : 'check-button'}">
+                <button class="action-button ${
+                  item.status === 'completed'
+                    ? 'active-check-button'
+                    : 'check-button'
+                }">
                   <span class="material-icons">check</span>
                 </button>
-                ${item.status === 'completed' ? `
+                ${
+                  item.status === 'completed'
+                    ? `
                   <button class="action-button photo-button">
                     <span class="material-icons">camera</span>
                   </button>
-                ` : `
+                `
+                    : `
                   <button class="action-button issue-button">
                     <span class="material-icons">close</span>
                   </button>
-                `}
+                `
+                }
               </div>
             </div>
-          `).join('')}
+          `
+            )
+            .join('')}
         </div>
       `;
-    }).join('');
+    })
+    .join('');
 
   // Add event listeners to action buttons
-  document.querySelectorAll('.action-button').forEach(button => {
+  document.querySelectorAll('.action-button').forEach((button) => {
     button.addEventListener('click', (e) => {
       e.stopPropagation();
       const itemId = button.closest('.checklist-item').dataset.id;
@@ -602,7 +628,7 @@ function getItemShape(part, detail) {
 }
 
 async function handleItemAction(itemId, action) {
-  const item = checklist.find(i => i.id === Number(itemId));
+  const item = checklist.find((i) => i.id === Number(itemId));
   if (!item) return;
 
   switch (action) {
@@ -611,41 +637,45 @@ async function handleItemAction(itemId, action) {
       break;
     case 'photo':
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+        });
         const video = document.createElement('video');
         video.srcObject = stream;
         video.play();
-        
+
         // Show camera preview
         const previewContainer = document.createElement('div');
         previewContainer.className = 'camera-preview';
         previewContainer.appendChild(video);
-        
+
         const captureButton = document.createElement('button');
         captureButton.textContent = 'Chụp ảnh';
         captureButton.className = 'capture-button';
-        
+
         previewContainer.appendChild(captureButton);
         document.body.appendChild(previewContainer);
-        
+
         captureButton.addEventListener('click', () => {
           const canvas = document.createElement('canvas');
           canvas.width = video.videoWidth;
           canvas.height = video.videoHeight;
           canvas.getContext('2d').drawImage(video, 0, 0);
-          
+
           const imageUrl = canvas.toDataURL('image/png');
           item.photos.push(imageUrl);
-          
+
           // Clean up
-          stream.getTracks().forEach(track => track.stop());
+          stream.getTracks().forEach((track) => track.stop());
           previewContainer.remove();
-          
+
           updateChecklist();
           updateProgress();
         });
       } catch (error) {
-        alert('Không thể truy cập camera. Vui lòng cho phép quyền sử dụng camera.');
+        alert(
+          'Không thể truy cập camera. Vui lòng cho phép quyền sử dụng camera.'
+        );
       }
       break;
     case 'issue':
@@ -662,12 +692,72 @@ function openIssueModal(item) {
   const modal = document.getElementById('issue-modal-overlay');
   const title = document.getElementById('modal-item-title');
   const noteInput = document.getElementById('note-input');
-  
+  const photoList = document.getElementById('issue-photo-list');
+
+  // Set modal content
   title.textContent = item.name;
   noteInput.value = item.note || '';
-  
-  modal.classList.add('active');
-  
+
+  // Update photo list
+  const updatePhotoList = () => {
+    photoList.innerHTML = item.photos
+      .map(
+        (photo, index) => `
+      <div class="photo-item">
+        <img src="${photo}" alt="Issue photo ${index + 1}">
+        <button class="delete-photo-button" onclick="deleteIssuePhoto(${
+          item.id
+        }, ${index})">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+    `
+      )
+      .join('');
+  };
+
+  updatePhotoList();
+
+  // Handle camera button
+  const takePictureButton = document.getElementById('take-picture-button');
+  takePictureButton.onclick = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const video = document.getElementById('camera-video');
+      const cameraPreview = document.getElementById('camera-preview');
+
+      video.srcObject = stream;
+      video.play();
+      cameraPreview.classList.add('active');
+
+      // Handle capture
+      const captureButton = document.getElementById('capture-button');
+      captureButton.onclick = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+
+        const imageUrl = canvas.toDataURL('image/png');
+        item.photos.push(imageUrl);
+        updatePhotoList();
+
+        // Clean up
+        stream.getTracks().forEach((track) => track.stop());
+        cameraPreview.classList.remove('active');
+      };
+
+      // Handle close camera
+      const closeCameraButton = document.getElementById('close-camera-button');
+      closeCameraButton.onclick = () => {
+        stream.getTracks().forEach((track) => track.stop());
+        cameraPreview.classList.remove('active');
+      };
+    } catch (error) {
+      alert('カメラへのアクセス許可が必要です！');
+    }
+  };
+
   // Handle save
   const saveButton = modal.querySelector('.save-button');
   saveButton.onclick = () => {
@@ -677,11 +767,24 @@ function openIssueModal(item) {
     updateChecklist();
     updateProgress();
   };
-  
+
   // Handle close
   modal.querySelector('.close-modal').onclick = () => {
     modal.classList.remove('active');
   };
+
+  // Show modal
+  modal.classList.add('active');
+}
+
+function deleteIssuePhoto(itemId, photoIndex) {
+  const item = checklist.find((i) => i.id === itemId);
+  if (item && item.photos[photoIndex]) {
+    if (confirm('この写真を削除してもよろしいですか？')) {
+      item.photos.splice(photoIndex, 1);
+      openIssueModal(item); // Refresh modal
+    }
+  }
 }
 
 function openPhotoGallery(photos) {
@@ -693,7 +796,7 @@ function openPhotoGallery(photos) {
 
   const gallery = document.createElement('div');
   gallery.className = 'photo-gallery';
-  
+
   // Add close button
   const closeButton = document.createElement('button');
   closeButton.className = 'close-gallery-button';
@@ -704,13 +807,13 @@ function openPhotoGallery(photos) {
   photos.forEach((photo, index) => {
     const photoContainer = document.createElement('div');
     photoContainer.className = 'photo-container';
-    
+
     const img = document.createElement('img');
     img.src = photo;
     img.onerror = () => {
       img.src = 'assets/images/placeholder.jpg'; // Fallback image
     };
-    
+
     const deleteButton = document.createElement('button');
     deleteButton.className = 'delete-photo-button';
     deleteButton.innerHTML = '&times;';
@@ -726,17 +829,17 @@ function openPhotoGallery(photos) {
         }
       }
     };
-    
+
     photoContainer.appendChild(img);
     photoContainer.appendChild(deleteButton);
     gallery.appendChild(photoContainer);
   });
-  
+
   // Add overlay
   const overlay = document.createElement('div');
   overlay.className = 'gallery-overlay';
   overlay.onclick = () => gallery.remove();
-  
+
   document.body.appendChild(overlay);
   document.body.appendChild(gallery);
 }

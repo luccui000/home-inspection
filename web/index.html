@@ -84,7 +84,7 @@
       </div>
     </div>
 
-    <!-- Modals -->
+    <!-- Issue Modal -->
     <div class="modal-overlay" id="issue-modal-overlay">
       <div class="modal-content">
         <div class="modal-header">
@@ -96,6 +96,8 @@
         </div>
         <div class="modal-body">
           <h3 class="modal-item-title" id="modal-item-title"></h3>
+          
+          <!-- Note Section -->
           <div class="note-container">
             <label class="note-label">問題メモ:</label>
             <textarea
@@ -104,9 +106,38 @@
               placeholder="問題の詳細を記入..."
             ></textarea>
           </div>
+
+          <!-- Photo Section -->
+          <div class="photo-section">
+            <div class="photo-controls">
+              <button class="take-picture-button" id="take-picture-button">
+                <span class="material-icons">camera</span>
+                <span>写真を撮る</span>
+              </button>
+            </div>
+
+            <!-- Photo List -->
+            <div class="photo-list-container">
+              <h4 class="photo-list-title">撮影した写真:</h4>
+              <div class="photo-list" id="issue-photo-list"></div>
+            </div>
+          </div>
+
           <button class="save-button">保存</button>
         </div>
       </div>
+    </div>
+
+    <!-- Camera Preview Modal -->
+    <div class="camera-preview" id="camera-preview">
+      <video id="camera-video"></video>
+      <button class="capture-button" id="capture-button">
+        <span class="material-icons">camera</span>
+        <span>撮影</span>
+      </button>
+      <button class="close-camera-button" id="close-camera-button">
+        <span class="material-icons">close</span>
+      </button>
     </div>
 
     <script src="script.js"></script>
