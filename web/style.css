@@ -161,7 +161,8 @@ body {
 
 /* Checklist Section */
 .checklist-container {
-  padding: 16px;
+  flex: 1;
+  padding: 0 16px;
 }
 
 .section-title {
@@ -172,8 +173,136 @@ body {
 }
 
 .checklist {
+  flex: 1;
   max-height: 400px;
   overflow-y: auto;
+}
+
+.checklist-group {
+  margin-bottom: 16px;
+}
+
+.checklist-subtitle-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding: 0 4px;
+}
+
+.checklist-subtitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  flex: 1;
+}
+
+.completion-count-container {
+  background-color: #f1f5f9;
+  border-radius: 12px;
+  padding: 2px 8px;
+}
+
+.completion-count {
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.checklist-item {
+  background-color: white;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.checklist-header {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.checklist-text {
+  flex: 1;
+  font-size: 14px;
+  color: #334155;
+}
+
+.photo-indicator {
+  display: flex;
+  align-items: center;
+  background-color: #dbeafe;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.photo-count {
+  margin-left: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #2563eb;
+}
+
+.checklist-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  cursor: pointer;
+}
+
+.check-button {
+  background-color: #64748b;
+}
+
+.active-check-button {
+  background-color: #10b981;
+}
+
+.photo-button {
+  background-color: #6366f1;
+}
+
+.issue-button {
+  background-color: #ef4444;
+}
+
+.action-button .material-icons {
+  color: white;
+  font-size: 20px;
+}
+
+.shape-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  margin-right: 12px;
+}
+
+.triangle-shape {
+  width: 0;
+  height: 0;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-bottom: 18px solid currentColor;
+}
+
+.diamond-shape {
+  width: 12.6px;
+  height: 12.6px;
+  transform: rotate(45deg);
+  background-color: currentColor;
 }
 
 /* Modals */

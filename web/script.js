@@ -481,23 +481,138 @@ function updateChecklist() {
       (selectedDetails.length === 0 || selectedDetails.includes(item.detail))
   );
 
-  checklistContainer.innerHTML = filtered
-    .map(
-      (item) => `
-    <div class="checklist-item">
-      <div class="checklist-header">
-        <div class="shape-icon"></div>
-        <div class="checklist-text">${item.name}</div>
-      </div>
-      <div class="checklist-actions">
-        <button class="action-button check-button">
-          <span class="material-icons">check</span>
-        </button>
-      </div>
-    </div>
-  `
-    )
-    .join('');
+  // Group items by detail type
+  const groupedItems = filtered.reduce((groups, item) => {
+    const detailType = item.detail;
+    if (!groups[detailType]) {
+      groups[detailType] = [];
+    }
+    groups[detailType].push(item);
+    return groups;
+  }, {});
+
+  checklistContainer.innerHTML = Object.entries(groupedItems)
+    .map(([detailType, items]) => {
+      const completedCount = items.filter(item => 
+        item.status === 'completed'
+      ).length;
+
+      const detailInfo = DETAIL_TYPES.find(d => d.id === detailType);
+      
+      return `
+        <div class="checklist-group">
+          <div class="checklist-subtitle-container">
+            <span class="material-icons">${detailInfo?.icon || 'circle'}</span>
+            <span class="checklist-subtitle">${detailInfo?.name || detailType}</span>
+            <div class="completion-count-container">
+              <span class="completion-count">${completedCount}/${items.length}</span>
+            </div>
+          </div>
+
+          ${items.map(item => `
+            <div class="checklist-item">
+              <div class="checklist-header">
+                <div class="shape-icon" style="background-color: ${getItemColor(item.part, item.detail)};">
+                  ${getItemShape(item.part, item.detail)}
+                </div>
+                <div class="checklist-text">${item.name}</div>
+                ${item.photos.length > 0 ? `
+                  <div class="photo-indicator">
+                    <span class="material-icons">images</span>
+                    <span class="photo-count">${item.photos.length}</span>
+                  </div>
+                ` : ''}
+              </div>
+              <div class="checklist-actions">
+                <button class="action-button ${item.status === 'completed' ? 'active-check-button' : 'check-button'}">
+                  <span class="material-icons">check</span>
+                </button>
+                ${item.status === 'completed' ? `
+                  <button class="action-button photo-button">
+                    <span class="material-icons">camera</span>
+                  </button>
+                ` : `
+                  <button class="action-button issue-button">
+                    <span class="material-icons">close</span>
+                  </button>
+                `}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }).join('');
+
+  // Add event listeners to action buttons
+  document.querySelectorAll('.action-button').forEach(button => {
+    button.addEventListener('click', () => {
+      const itemId = button.closest('.checklist-item').dataset.id;
+      handleItemAction(itemId, button.classList.contains('check-button') ? 'check' : 
+        button.classList.contains('photo-button') ? 'photo' : 'issue');
+    });
+  });
+}
+
+function getItemColor(part, detail) {
+  // Map colors based on part and detail
+  if (part === 'roof') {
+    if (detail === 'structure') return '#ef4444';
+    if (detail === 'material') return '#f59e0b';
+    return '#3b82f6';
+  }
+  if (part === 'walls') {
+    if (detail === 'paint') return '#10b981';
+    if (detail === 'structure') return '#8b5cf6';
+    if (detail === 'window') return '#0ea5e9';
+    if (detail === 'door') return '#f97316';
+    return '#3b82f6';
+  }
+  if (part === 'foundation') {
+    if (detail === 'structure') return '#ef4444';
+    return '#8b5cf6';
+  }
+  return '#64748b';
+}
+
+function getItemShape(part, detail) {
+  // Map shapes based on part and detail
+  if (part === 'roof') {
+    if (detail === 'structure') return '<div class="triangle-shape"></div>';
+    if (detail === 'material') return '';
+    return '';
+  }
+  if (part === 'walls') {
+    if (detail === 'paint') return '';
+    if (detail === 'structure') return '<div class="triangle-shape"></div>';
+    if (detail === 'window') return '<div class="diamond-shape"></div>';
+    if (detail === 'door') return '';
+    return '';
+  }
+  if (part === 'foundation') {
+    if (detail === 'structure') return '<div class="triangle-shape"></div>';
+    return '';
+  }
+  return '';
+}
+
+function handleItemAction(itemId, action) {
+  const item = checklist.find(i => i.id === Number(itemId));
+  if (!item) return;
+
+  switch (action) {
+    case 'check':
+      item.status = item.status === 'completed' ? 'pending' : 'completed';
+      break;
+    case 'photo':
+      // Handle photo action
+      break;
+    case 'issue':
+      // Handle issue action
+      break;
+  }
+
+  updateChecklist();
+  updateProgress();
 }
 
 function updateProgress() {
