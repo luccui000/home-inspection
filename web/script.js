@@ -23,6 +23,9 @@ let checklist = [];
 
 // State
 let selectedDirection = 'north';
+let selectedShape = null;
+let isDragging = false;
+let dragIcon = null;
 let selectedPart = '';
 let selectedDetails = [];
 let zoomLevel = 1;
@@ -62,6 +65,22 @@ function setupDirectionButtons() {
 function setupBlueprintInteractions() {
   const zoomInButton = document.getElementById('zoom-in');
   const zoomOutButton = document.getElementById('zoom-out');
+  const shapeButtons = document.querySelectorAll('.shape-button');
+
+  // Setup shape buttons
+  shapeButtons.forEach(button => {
+    button.addEventListener('mousedown', (e) => {
+      selectedShape = {
+        shape: button.dataset.shape,
+        color: button.dataset.color
+      };
+      startDrag(e);
+    });
+  });
+
+  // Handle mouse move for dragging
+  document.addEventListener('mousemove', handleDrag);
+  document.addEventListener('mouseup', endDrag);
 
   zoomInButton.addEventListener('click', () => {
     if (zoomLevel < 3) {
@@ -89,12 +108,126 @@ function updateBlueprintTransform() {
   imageContainer.style.transform = `scale(${zoomLevel}) translate(${panOffset.x}px, ${panOffset.y}px)`;
 }
 
+function startDrag(e) {
+  isDragging = true;
+  dragIcon = document.createElement('div');
+  dragIcon.className = 'dragged-icon';
+  dragIcon.style.position = 'absolute';
+  dragIcon.style.zIndex = 9999;
+  dragIcon.style.pointerEvents = 'none';
+  
+  // Create icon based on selected shape
+  switch(selectedShape.shape) {
+    case 'circle':
+      dragIcon.innerHTML = `<div class="circle-shape" style="background-color: ${selectedShape.color}; width: 24px; height: 24px;"></div>`;
+      break;
+    case 'triangle':
+      dragIcon.innerHTML = `
+        <div class="triangle-container" style="width: 24px; height: 24px;">
+          <div class="triangle-shape" style="border-bottom-color: ${selectedShape.color}; border-bottom-width: 24px; border-left-width: 12px; border-right-width: 12px;"></div>
+        </div>`;
+      break;
+    case 'square':
+      dragIcon.innerHTML = `<div class="square-shape" style="background-color: ${selectedShape.color}; width: 24px; height: 24px;"></div>`;
+      break;
+    case 'diamond':
+      dragIcon.innerHTML = `
+        <div class="diamond-container" style="width: 24px; height: 24px;">
+          <div class="diamond-shape" style="background-color: ${selectedShape.color}; width: 16px; height: 16px;"></div>
+        </div>`;
+      break;
+  }
+  
+  document.body.appendChild(dragIcon);
+  handleDrag(e);
+}
+
+function handleDrag(e) {
+  if (!isDragging) return;
+  
+  dragIcon.style.left = `${e.clientX - 12}px`;
+  dragIcon.style.top = `${e.clientY - 12}px`;
+}
+
+function endDrag(e) {
+  if (!isDragging) return;
+  
+  isDragging = false;
+  dragIcon.remove();
+  
+  const rect = blueprintContainer.getBoundingClientRect();
+  const centerX = rect.width / 2;
+  const centerY = rect.height / 2;
+  
+  // Calculate position relative to center, accounting for pan and zoom
+  const adjustedX = (e.clientX - rect.left - centerX - panOffset.x) / zoomLevel + centerX;
+  const adjustedY = (e.clientY - rect.top - centerY - panOffset.y) / zoomLevel + centerY;
+  
+  // Add the icon to pinned icons
+  pinnedIcons.push({
+    id: Date.now().toString(),
+    shape: selectedShape.shape,
+    color: selectedShape.color,
+    x: adjustedX,
+    y: adjustedY,
+    direction: selectedDirection
+  });
+  
+  // Update blueprint display
+  updateBlueprintIcons();
+}
+
+function updateBlueprintIcons() {
+  const iconsContainer = document.querySelector('.pinned-icons-container');
+  iconsContainer.innerHTML = pinnedIcons
+    .filter(icon => icon.direction === selectedDirection)
+    .map(icon => {
+      const centerX = blueprintContainer.clientWidth / 2;
+      const centerY = blueprintContainer.clientHeight / 2;
+      
+      // Calculate display position with zoom and pan
+      const displayX = (icon.x - centerX) * zoomLevel + centerX + panOffset.x;
+      const displayY = (icon.y - centerY) * zoomLevel + centerY + panOffset.y;
+      
+      let iconHtml = '';
+      switch(icon.shape) {
+        case 'circle':
+          iconHtml = `<div class="pinned-circle" style="background-color: ${icon.color};"></div>`;
+          break;
+        case 'triangle':
+          iconHtml = `
+            <div class="triangle-container">
+              <div class="pinned-triangle" style="border-bottom-color: ${icon.color};"></div>
+            </div>`;
+          break;
+        case 'square':
+          iconHtml = `<div class="pinned-square" style="background-color: ${icon.color};"></div>`;
+          break;
+        case 'diamond':
+          iconHtml = `
+            <div class="diamond-container">
+              <div class="pinned-diamond" style="background-color: ${icon.color};"></div>
+            </div>`;
+          break;
+      }
+      
+      return `
+        <div class="pinned-icon" 
+             style="left: ${displayX}px; top: ${displayY}px;"
+             data-id="${icon.id}">
+          ${iconHtml}
+        </div>`;
+    })
+    .join('');
+}
+
 function handleBlueprintClick(event) {
+  if (isDragging) return;
+  
   const rect = blueprintContainer.getBoundingClientRect();
   const x = event.clientX - rect.left;
   const y = event.clientY - rect.top;
 
-  // Add icon logic here
   console.log('Clicked at:', x, y);
 }
 
