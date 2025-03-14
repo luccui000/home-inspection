@@ -1,6 +1,0 @@
-module Pods_homeinspection {
-  umbrella header "Pods-homeinspection-umbrella.h"
-
-  export *
-  module * { export * }
-}
