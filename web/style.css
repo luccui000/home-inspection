@@ -32,47 +32,65 @@ body {
 
 /* Progress Section */
 .progress-container {
-  padding: 16px;
-}
-
-.progress-text-container {
+  padding: 6px 16px;
+  background-color: white;
+  border-bottom: 1px solid #e5e7eb;
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  margin-bottom: 4px;
+  gap: 16px;
 }
 
-.progress-text {
-  font-size: 12px;
-  color: #475569;
+.progress-info {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.progress-count {
   font-weight: 500;
+  color: #334155;
+}
+
+.progress-bar-container {
+  flex: 1;
+  max-width: 200px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.progress-bar-background {
+  flex: 1;
+  height: 6px;
+  background-color: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: #2563eb;
+  border-radius: 3px;
+  width: 0;
+  transition: width 0.3s ease;
 }
 
 .progress-percentage {
   font-size: 14px;
-  font-weight: 600;
-  color: var(--primary-color);
-}
-
-.progress-bar-background {
-  height: 8px;
-  background-color: var(--border-color);
-  border-radius: 4px;
-}
-
-.progress-bar {
-  height: 8px;
-  background-color: var(--primary-color);
-  border-radius: 4px;
-  width: 0%;
-  transition: width 0.3s ease;
+  font-weight: 500;
+  color: #2563eb;
+  min-width: 42px;
+  text-align: right;
 }
 
 /* Direction Selector */
 .direction-container {
-  padding-left: 16px;
-  padding-right: 16px;
+  padding: 10px 16px;
   border-bottom: 1px solid var(--border-color);
-  padding-bottom: 10px;
 }
 
 .direction-buttons {
@@ -102,6 +120,95 @@ body {
 .direction-button span {
   margin-left: 4px;
   font-size: 14px;
+}
+
+.filter-container {
+  padding: 12px 16px;
+  background-color: white;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+}
+
+.filter-buttons::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  background-color: white;
+  color: #64748b;
+  font-size: 14px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.filter-button.active {
+  background-color: #2563eb;
+  border-color: #2563eb;
+  color: white;
+}
+
+.filter-button:hover:not(.active) {
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.filter-button .material-icons {
+  font-size: 18px;
+}
+
+.filter-button.active .material-icons {
+  color: white;
+}
+
+.vertical-filter-container {
+  position: absolute;
+  top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 10;
+  padding: 8px;
+  border-radius: 12px;
+}
+
+.vertical-filter-container .filter-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.vertical-filter-container .filter-button.active {
+  background-color: #2563eb;
+  color: white;
+}
+
+.vertical-filter-container .filter-button:not(.active):hover {
+  background-color: #f3f4f6;
+}
+
+.vertical-filter-container .filter-button .material-icons {
+  font-size: 20px;
 }
 
 /* Blueprint Section */
@@ -172,8 +279,50 @@ body {
 .section-title {
   font-size: 20px;
   font-weight: 600;
-  margin-bottom: 8px;
+  margin: 8px 0;
   color: #334155;
+}
+
+.checklist-filters {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.checklist-filters::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  background-color: white;
+  color: #64748b;
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-chip .material-icons {
+  font-size: 16px;
+}
+
+.filter-chip.active {
+  background-color: #2563eb;
+  border-color: #2563eb;
+  color: white;
+}
+
+.filter-chip:not(.active):hover {
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
 }
 
 .checklist {
@@ -183,19 +332,24 @@ body {
 }
 
 .checklist-group {
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 }
 
 .checklist-subtitle-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   padding: 0 4px;
 }
 
-.checklist-subtitle {
+.checklist-subtitle-container .material-icons {
   font-size: 14px;
+  color: #64748b;
+}
+
+.checklist-subtitle {
+  font-size: 10px;
   font-weight: 600;
   color: #64748b;
   flex: 1;
@@ -215,24 +369,50 @@ body {
 
 .checklist-item {
   background-color: white;
-  border-radius: 12px;
+  border-radius: 5px;
   padding: 12px;
   margin-bottom: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
+  border-left: 2px solid transparent;
+  transition: border-color 0.3s ease;
+}
+
+.checklist-item.has-content {
+  border-left-color: #ef4444;
 }
 
 .checklist-header {
   flex: 1;
   display: flex;
   align-items: center;
+  margin-bottom: 5px;
 }
 
 .checklist-text {
   flex: 1;
   font-size: 14px;
   color: #334155;
+}
+ 
+
+.checklist-item.completed-item {
+  border-left-color: #1cb683; /* Màu xanh primary */
+}
+
+/* Thêm hiệu ứng hover nếu muốn */
+.checklist-item.completed-item:hover {
+  border-left-color: #1cb683; /* Màu xanh đậm hơn khi hover */
+}
+
+.checklist-item.completed-item {
+  border-left-color: #10b981; /* Màu xanh cho completed */
+}
+
+.checklist-item.issue-item {
+  border-left-color: #ef4444; /* Màu đỏ cho issue */
 }
 
 .photo-indicator {
@@ -346,8 +526,9 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
+  padding: 10px 16px;
   color: #000;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .modal-title {
@@ -440,10 +621,10 @@ body {
   color: white;
   border: none;
   border-radius: 8px;
-  padding: 12px 24px;
+  padding: 10px 16px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   cursor: pointer;
   font-size: 14px;
   transition: background-color 0.2s ease;
@@ -520,14 +701,14 @@ body {
 
 /* Shapes Toolbar */
 .shapes-toolbar {
-  padding: 8px 16px;
   background-color: var(--white);
   border-bottom: 1px solid var(--border-color);
 }
 
 .shapes-container {
   display: flex;
-  gap: 16px;
+  justify-content: center;
+  gap: 10px;
   overflow-x: auto;
   padding: 8px 0;
 }
@@ -777,7 +958,6 @@ body {
 }
 
 .capture-button {
-  margin-top: 20px;
   padding: 10px 20px;
   background: var(--primary-color);
   color: white;
@@ -827,6 +1007,9 @@ body {
   font-size: 20px;
   cursor: pointer;
   z-index: 1001;
+}
+.close-gallery {
+  
 }
 
 .photo-container {
@@ -950,24 +1133,20 @@ body {
 /* Camera button and history button */
 .photo-history-button {
   position: absolute;
-  bottom: 12px;
-  padding: 8px 12px;
+  bottom: 5px;
   background-color: #6366f1;
   color: white;
   border: none;
   border-radius: 8px;
   display: flex;
   align-items: center;
-  gap: 4px;
   font-size: 14px;
   cursor: pointer;
   z-index: 10;
+  right: 110px; /* Đặt bên trái của nút camera */
+  padding: 5px;
 } 
-
-.photo-history-button {
-  right: 130px; /* Đặt bên trái của nút camera */
-  padding: 8px;
-}
+ 
 
 .photo-count {
   background-color: white;
@@ -1016,7 +1195,6 @@ body {
   bottom: 30px;
   display: flex;
   justify-content: center;
-  gap: 30px;
   width: 100%;
 }
 
@@ -1033,7 +1211,6 @@ body {
 
 .camera-controls .camera-button .material-icons {
   font-size: 30px;
-  
 }
 
 .photo-indicator .material-icons {
@@ -1052,7 +1229,7 @@ body {
   right: 0;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
+  z-index: 9999999;
   display: flex;
   justify-content: center;
   align-items: flex-end;
@@ -1071,7 +1248,6 @@ body {
   width: 100%;
   max-height: 80vh;
   border-radius: 20px 20px 0 0;
-  padding: 20px;
   transform: translateY(100%);
   transition: transform 0.3s ease;
 }
@@ -1084,7 +1260,8 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .photo-history-header h3 {
@@ -1101,6 +1278,7 @@ body {
 }
 
 .photo-history-body {
+  padding: 10px;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
@@ -1219,7 +1397,7 @@ body {
   right: 0;
   bottom: 0;
   background-color: black;
-  z-index: 1000;
+  z-index: 9999999999999;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1249,7 +1427,7 @@ body {
   gap: 48px;
 }
 
-.capture-button {
+.camera-controls .capture-button {
   width: 50px;
   height: 50px;
   border-radius: 50%;
@@ -1266,7 +1444,7 @@ body {
   color: #2563eb;
 }
 
-.cancel-button {
+.camera-controls .cancel-button {
   width: 50px;
   height: 50px;
   border-radius: 50%;
@@ -1307,18 +1485,18 @@ body {
 /* Styles cho photo gallery modal */
 .photo-gallery-modal {
   position: fixed;
-  top: 0;
+  top: 0; /* Thay đổi từ bottom thành top */
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
-  z-index: 100099999999999;
+  background-color: rgba(0, 0, 0, 0.5); /* Thêm background overlay */
+  z-index: 1000;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .photo-gallery-modal.show {
@@ -1328,21 +1506,26 @@ body {
 
 .gallery-content {
   background-color: white;
-  width: 90%;
-  max-width: 600px;
+  width: 100%;
   max-height: 80vh;
-  border-radius: 12px;
+  border-radius: 16px 16px 0 0; /* Bo góc trên */
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+}
+
+.photo-gallery-modal.show .gallery-content {
+  transform: translateY(0);
 }
 
 .gallery-header {
+  padding: 16px;
+  border-bottom: 1px solid #e5e7eb;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
-  border-bottom: 1px solid #e5e7eb;
 }
 
 .gallery-header h3 {
@@ -1364,14 +1547,13 @@ body {
   position: relative;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  aspect-ratio: 3/4;
 }
 
 .gallery-photo-item img {
   width: 100%;
-  aspect-ratio: 3/4;
+  height: 100%;
   object-fit: cover;
-  display: block;
 }
 
 .photo-actions {
@@ -1402,7 +1584,6 @@ body {
   color: white;
   font-size: 10px;
   padding: 4px 8px;
-  text-align: center;
 }
 
 .gallery-footer {
@@ -1413,16 +1594,19 @@ body {
 }
 
 .add-photo-button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
   background-color: #2563eb;
   color: white;
   border: none;
   padding: 8px 16px;
   border-radius: 8px;
-  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   cursor: pointer;
+}
+
+.add-photo-button:active {
+  transform: scale(0.95);
 }
 
 /* Styles cho fullsize photo modal */

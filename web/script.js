@@ -40,6 +40,8 @@ let photoHistory = {
   south: [],
   west: [],
 };
+let selectedFilter = 'all';
+// State variables
 
 // DOM Elements
 const blueprintImage = document.getElementById('blueprint-image');
@@ -71,9 +73,23 @@ document.addEventListener('DOMContentLoaded', () => {
     { passive: false }
   );
 
+  if (window.checklistItems && window.checklistItems.length > 0) {
+    checklist = [...window.checklistItems];
+    console.log('Checklist loaded with', checklist.length, 'items');
+  } else {
+    console.error('No checklist items found in data.js');
+    checklist = []; // Set to empty array to prevent errors
+  }
+
+  // Set default direction to north
+  selectedDirection = 'north';
+  console.log('Default direction set to:', selectedDirection);
+
   setupShapeButtons();
   setupShapeButtonEvents();
   initDirection();
+  setupPartFilters();
+  updateDetailFilters();
   loadChecklist();
   setupDirectionButtons();
   setupBlueprintInteractions();
@@ -82,6 +98,285 @@ document.addEventListener('DOMContentLoaded', () => {
   updateProgress();
 });
 
+// Get unique details for a part and direction
+function getDetailsForPart(part) {
+  console.log(
+    'Getting details for part:',
+    part,
+    'and direction:',
+    selectedDirection
+  );
+
+  // Ensure checklist is loaded
+  if (!checklist || checklist.length === 0) {
+    console.error('Checklist is empty or not loaded yet');
+    return [];
+  }
+
+  // Filter by current direction first
+  const itemsInDirection = checklist.filter(
+    (item) => item.direction === selectedDirection
+  );
+  console.log('Items in direction:', itemsInDirection.length);
+
+  let details = [];
+
+  if (part === 'all') {
+    // If "all" parts selected, return all unique details for current direction
+    details = [...new Set(itemsInDirection.map((item) => item.detail))];
+  } else {
+    // Return unique details for selected part and current direction
+    details = [
+      ...new Set(
+        itemsInDirection
+          .filter((item) => item.part === part)
+          .map((item) => item.detail)
+      ),
+    ];
+  }
+
+  console.log('Details found:', details);
+  return details;
+}
+
+// Setup part filters
+function setupPartFilters() {
+  const filterButtons = document.querySelectorAll(
+    '.vertical-filter-container .filter-button'
+  );
+
+  filterButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      // Update active state
+      filterButtons.forEach((btn) => btn.classList.remove('active'));
+      button.classList.add('active');
+
+      // Update selected part
+      selectedPart = button.dataset.part;
+
+      // Reset detail selection
+      selectedDetail = 'all';
+
+      // Update detail filters
+      updateDetailFilters();
+
+      // Update checklist
+      updateChecklist();
+    });
+  });
+}
+function setupDetailFilters() {
+  const filterChips = document.querySelectorAll('.filter-chip');
+
+  filterChips.forEach((chip) => {
+    chip.addEventListener('click', () => {
+      const detail = chip.dataset.detail;
+
+      if (detail === 'all') {
+        // If "all" is clicked, clear other selections
+        selectedDetails = [];
+        filterChips.forEach((c) => c.classList.remove('active'));
+        chip.classList.add('active');
+      } else {
+        // Remove 'all' selection if exists
+        const allChip = document.querySelector(
+          '.filter-chip[data-detail="all"]'
+        );
+        if (allChip) allChip.classList.remove('active');
+
+        // Toggle selection
+        const detailIndex = selectedDetails.indexOf(detail);
+        if (detailIndex === -1) {
+          // Add new detail
+          selectedDetails.push(detail);
+          chip.classList.add('active');
+        } else {
+          // Remove detail
+          selectedDetails.splice(detailIndex, 1);
+          chip.classList.remove('active');
+
+          // If no details selected, activate 'all'
+          if (selectedDetails.length === 0 && allChip) {
+            allChip.classList.add('active');
+          }
+        }
+      }
+
+      // Update checklist with selected details
+      updateChecklist();
+    });
+  });
+}
+
+// Update detail filters based on selected direction and part
+function updateDetailFilters() {
+  const detailFilters = document.getElementById('detail-filters');
+
+  // Debug line để kiểm tra
+  console.log('Detail filters element:', detailFilters);
+
+  if (!detailFilters) {
+    console.error('Could not find detail-filters element');
+    return;
+  }
+
+  // Get details for current direction and part
+  const details = getDetailsForPart(selectedPart);
+  console.log('Details found:', details);
+
+  // Create detail filter buttons
+  const detailButtons = ` 
+    ${details
+      .map((detail) => {
+        // Find corresponding detail type info
+        const detailInfo = DETAIL_TYPES.find((d) => d.id === detail) || {
+          id: detail,
+          name: detail,
+          icon: 'circle',
+        };
+        return `
+        <button class="filter-chip" data-detail="${detail}">
+          <span class="material-icons">${detailInfo.icon}</span>
+          <span>${detailInfo.name}</span>
+        </button>
+      `;
+      })
+      .join('')}
+  `;
+
+  // Update HTML
+  detailFilters.innerHTML = detailButtons;
+  console.log('Detail filters HTML updated');
+
+  // Reset selected details when updating filters
+  selectedDetails = [];
+
+  // Setup detail filter click handlers
+  setupDetailFilters();
+}
+
+// Get unique parts for current direction
+function getPartsForDirection() {
+  return [
+    ...new Set(
+      checklist
+        .filter((item) => item.direction === selectedDirection)
+        .map((item) => item.part)
+    ),
+  ];
+}
+
+// Update vertical part filters for current direction
+function setupPartFiltersForDirection() {
+  console.log('Setting up part filters for direction:', selectedDirection);
+
+  const filterContainer = document.querySelector('.vertical-filter-container');
+  if (!filterContainer) {
+    console.error('Vertical filter container not found');
+    return;
+  }
+
+  // Get parts for current direction
+  const availableParts = getPartsForDirection();
+  console.log('Available parts:', availableParts);
+
+  // Always include "all" option
+  const buttonHTML = `
+    <button class="filter-button active" data-part="all">
+      <span>全て</span>
+    </button>
+    ${availableParts
+      .map((part) => {
+        const partInfo = HOUSE_PARTS.find((p) => p.id === part) || {
+          id: part,
+          name: part,
+          icon: 'category',
+        };
+        return `
+        <button class="filter-button" data-part="${part}">
+          <span>${partInfo.name}</span>
+        </button>
+      `;
+      })
+      .join('')}
+  `;
+
+  // Update HTML
+  filterContainer.innerHTML = buttonHTML;
+  console.log('Vertical filter HTML updated');
+
+  // Reset selected part
+  selectedPart = 'all';
+
+  // Add event listeners to new buttons
+  setupPartFilters();
+}
+
+// Get icon for detail type
+function getDetailIcon(detail) {
+  const icons = {
+    paint: 'format_paint',
+    material: 'layers',
+    window: 'window',
+    door: 'door_front',
+    structure: 'architecture',
+  };
+  return icons[detail] || 'list';
+}
+
+// Get Japanese label for detail type
+function getDetailLabel(detail) {
+  const labels = {
+    paint: '塗装',
+    material: '材料',
+    window: '窓',
+    door: 'ドア',
+    structure: '構造',
+  };
+  return labels[detail] || detail;
+}
+
+// Thêm hàm setup category filters
+function setupCategoryFilters() {
+  const filterChips = document.querySelectorAll('.filter-chip[data-category]');
+
+  filterChips.forEach((chip) => {
+    chip.addEventListener('click', () => {
+      // Remove active class from all chips
+      filterChips.forEach((c) => c.classList.remove('active'));
+
+      // Add active class to clicked chip
+      chip.classList.add('active');
+
+      // Update selected category
+      selectedCategory = chip.dataset.category;
+
+      // Update checklist
+      updateChecklist();
+    });
+  });
+}
+
+function setupPhotoFilters() {
+  const filterButtons = document.querySelectorAll('.filter-chip');
+
+  filterButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      // Remove active class from all buttons
+      filterButtons.forEach((btn) => btn.classList.remove('active'));
+
+      // Add active class to clicked button
+      button.classList.add('active');
+
+      // Update current filter
+      currentPhotoFilter = button.dataset.filter;
+
+      // Update checklist with new filter
+      updateChecklist();
+    });
+  });
+}
+
 function initDirection() {
   const directionButtons = document.querySelectorAll('.direction-button');
 
@@ -89,7 +384,7 @@ function initDirection() {
     selectedDirection = directionButtons[0].dataset.direction;
     updateBlueprintImage();
     updateDirectionButtons();
-    updateChecklistItems();
+    setupPartFiltersForDirection();
   }
 }
 
@@ -121,13 +416,39 @@ function setupDirectionButtons() {
       // Cập nhật hiển thị icons trên blueprint
       updateBlueprintIcons();
 
+      // Update part filters based on new direction
+      setupPartFiltersForDirection();
+
+      // Update detail filters based on selected part (all)
+      updateDetailFilters();
+
       // Cập nhật checklist để hiển thị các mục phù hợp với direction mới
-      updateChecklistItems();
+      updateChecklist();
 
       // Cập nhật nút lịch sử ảnh
       updatePhotoHistoryButton();
 
       console.log('Direction changed to:', selectedDirection);
+    });
+  });
+}
+
+function setupFilterButtons() {
+  const filterButtons = document.querySelectorAll('.filter-button');
+
+  filterButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      // Xóa active class từ tất cả các buttons
+      filterButtons.forEach((btn) => btn.classList.remove('active'));
+
+      // Thêm active class cho button được click
+      button.classList.add('active');
+
+      // Cập nhật filter hiện tại
+      selectedFilter = button.dataset.filter;
+
+      // Cập nhật lại checklist
+      updateChecklist();
     });
   });
 }
@@ -867,12 +1188,20 @@ function loadChecklist() {
 }
 
 function updateChecklist() {
-  const filtered = checklist.filter(
-    (item) =>
-      item.direction === selectedDirection &&
-      (!selectedPart || item.part === selectedPart) &&
-      (selectedDetails.length === 0 || selectedDetails.includes(item.detail))
-  );
+  const filtered = checklist.filter((item) => {
+    // Filter by direction first
+    if (item.direction !== selectedDirection) return false;
+
+    // Filter by part if selected
+    if (selectedPart !== 'all' && item.part !== selectedPart) return false;
+
+    // Filter by details if any selected
+    if (selectedDetails.length > 0 && !selectedDetails.includes(item.detail)) {
+      return false;
+    }
+
+    return true;
+  });
 
   // Group items by detail type
   const groupedItems = filtered.reduce((groups, item) => {
@@ -909,14 +1238,20 @@ function updateChecklist() {
           ${items
             .map(
               (item) => `
-            <div class="checklist-item" data-id="${item.id}">
+            <div class="checklist-item ${
+              item.status === 'completed'
+                ? 'completed-item'
+                : item.status === 'issue'
+                ? 'issue-item'
+                : ''
+            }" data-id="${item.id}">
               <div class="checklist-header">
                 <div class="shape-icon">
                   ${getShapeHTML(getItemIconConfig(item.part, item.detail))}
                 </div>
                 <div class="checklist-text">${item.name}</div>
                 ${
-                  item.photos.length > 0
+                  item.photos && item.photos.length > 0
                     ? `
                   <div class="photo-indicator" data-item-id="${item.id}">
                     <span class="material-icons">images</span>
@@ -1045,7 +1380,24 @@ async function handleItemAction(itemId, action) {
 
     case 'photo':
       try {
-        // Yêu cầu quyền truy cập camera
+        // Tạo camera overlay
+        const cameraOverlay = document.createElement('div');
+        cameraOverlay.className = 'camera-overlay';
+        cameraOverlay.innerHTML = `
+            <div class="camera-container">
+              <video id="camera-video-element" autoplay playsinline></video>
+              <div class="camera-controls">
+                <button id="capture-photo-button" class="capture-button">
+                  <span class="material-icons">camera_alt</span>
+                </button>
+                <button id="cancel-photo-button" class="cancel-button">
+                  <span class="material-icons">close</span>
+                </button>
+              </div>
+            </div>
+          `;
+        document.body.appendChild(cameraOverlay);
+
         const stream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode: 'environment',
@@ -1054,14 +1406,10 @@ async function handleItemAction(itemId, action) {
           },
         });
 
-        // Kết nối stream với video element
         const video = document.getElementById('camera-video-element');
         video.srcObject = stream;
 
-        // Đảm bảo video đã được load
-        await video.play();
-
-        // Xử lý khi chụp ảnh
+        // Xử lý chụp ảnh
         document
           .getElementById('capture-photo-button')
           .addEventListener('click', () => {
@@ -1070,14 +1418,21 @@ async function handleItemAction(itemId, action) {
             canvas.height = video.videoHeight;
             canvas.getContext('2d').drawImage(video, 0, 0);
 
-            // Chuyển canvas thành URL hình ảnh
             const photoUrl = canvas.toDataURL('image/jpeg');
 
-            // Khởi tạo mảng photos nếu chưa có
+            // Thêm ảnh vào item
             if (!item.photos) item.photos = [];
-
-            // Thêm ảnh mới
             item.photos.push({
+              id: Date.now(),
+              url: photoUrl,
+              timestamp: new Date().toISOString(),
+            });
+
+            // Thêm ảnh vào photoHistory
+            if (!photoHistory[selectedDirection]) {
+              photoHistory[selectedDirection] = [];
+            }
+            photoHistory[selectedDirection].push({
               id: Date.now(),
               url: photoUrl,
               timestamp: new Date().toISOString(),
@@ -1087,14 +1442,14 @@ async function handleItemAction(itemId, action) {
             stream.getTracks().forEach((track) => track.stop());
             cameraOverlay.remove();
 
-            // Cập nhật giao diện
+            // Cập nhật UI
             updateChecklist();
 
-            // Hiển thị thông báo
+            updatePhotoHistoryButton(); // Cập nhật nút history
             showToast('写真が追加されました');
           });
 
-        // Xử lý khi hủy
+        // Xử lý hủy
         document
           .getElementById('cancel-photo-button')
           .addEventListener('click', () => {
@@ -1117,15 +1472,29 @@ async function handleItemAction(itemId, action) {
             const reader = new FileReader();
 
             reader.onload = (event) => {
-              if (!item.photos) item.photos = [];
+              const photoUrl = event.target.result;
 
+              // Thêm ảnh vào item
+              if (!item.photos) item.photos = [];
               item.photos.push({
                 id: Date.now(),
-                url: event.target.result,
+                url: photoUrl,
                 timestamp: new Date().toISOString(),
               });
 
+              // Thêm ảnh vào photoHistory
+              if (!photoHistory[selectedDirection]) {
+                photoHistory[selectedDirection] = [];
+              }
+              photoHistory[selectedDirection].push({
+                id: Date.now(),
+                url: photoUrl,
+                timestamp: new Date().toISOString(),
+              });
+
+              // Cập nhật UI
               updateChecklist();
+              updatePhotoHistoryButton(); // Cập nhật nút history
               showToast('写真が追加されました');
             };
 
@@ -1221,12 +1590,7 @@ function openIssueModal(item) {
   const takePictureButton = document.getElementById('take-picture-button');
   takePictureButton.onclick = async () => {
     try {
-      // Kiểm tra xem thiết bị có hỗ trợ camera không
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error('Camera not supported');
-      }
-
-      // Tạo overlay camera
+      // Tạo camera overlay trước
       const cameraOverlay = document.createElement('div');
       cameraOverlay.className = 'camera-overlay';
       cameraOverlay.innerHTML = `
@@ -1234,7 +1598,7 @@ function openIssueModal(item) {
           <video id="camera-video-element" autoplay playsinline></video>
           <div class="camera-controls">
             <button id="capture-photo-button" class="capture-button">
-              <span class="material-icons">camera</span>
+              <span class="material-icons">camera_alt</span>
             </button>
             <button id="cancel-photo-button" class="cancel-button">
               <span class="material-icons">close</span>
@@ -1243,6 +1607,10 @@ function openIssueModal(item) {
         </div>
       `;
       document.body.appendChild(cameraOverlay);
+      // Kiểm tra xem thiết bị có hỗ trợ camera không
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Camera not supported');
+      }
 
       // Yêu cầu quyền truy cập camera
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -1298,7 +1666,9 @@ function openIssueModal(item) {
     item.note = noteInput.value;
 
     // Đánh dấu item là đã được kiểm tra
-    item.status = 'completed';
+    if (item.note || item.photos?.length > 0) {
+      item.status = 'issue';
+    }
 
     // Đóng modal
     modal.classList.remove('active');
@@ -1424,9 +1794,9 @@ function updateDirectionButtons() {
 
   directionButtons.forEach((button) => {
     if (button.dataset.direction === selectedDirection) {
-      button.classList.add('selected-direction');
+      button.classList.add('active');
     } else {
-      button.classList.remove('selected-direction');
+      button.classList.remove('active');
     }
   });
 }
@@ -1467,9 +1837,7 @@ function renderChecklist() {
 
   checklistContainer.innerHTML = Object.entries(groupedItems)
     .map(([detailType, items]) => {
-      const completedCount = items.filter(
-        (item) => item.status === 'completed'
-      ).length;
+      const completedCount = items.filter((item) => item.status !== '').length;
 
       const detailInfo = DETAIL_TYPES.find((d) => d.id === detailType);
 
@@ -1490,7 +1858,13 @@ function renderChecklist() {
           ${items
             .map(
               (item) => `
-            <div class="checklist-item" data-id="${item.id}">
+            <div class="checklist-item ${
+              item.status === 'completed'
+                ? 'completed-item'
+                : item.status === 'issue'
+                ? 'issue-item'
+                : ''
+            }" data-id="${item.id}">
               <div class="checklist-header">
                 <div class="shape-icon">
                   ${getShapeHTML(getItemIconConfig(item.part, item.detail))}
@@ -1587,15 +1961,14 @@ function setupCameraButton() {
       // Fallback to file picker if camera access fails
       openFilePicker();
     }
+
+    // Cập nhật nút photo history
+    updatePhotoHistoryButton();
   });
 }
 
 async function openCamera() {
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment' }, // Sử dụng camera sau (nếu có)
-    });
-
     // Tạo modal camera
     const cameraModal = document.createElement('div');
     cameraModal.className = 'camera-modal';
@@ -1614,12 +1987,15 @@ async function openCamera() {
     `;
     document.body.appendChild(cameraModal);
 
-    // Kết nối video với camera
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment' },
+    });
+
     const video = document.getElementById('camera-video-preview');
     video.srcObject = stream;
-    video.play();
+    await video.play();
 
-    // Nút chụp ảnh
+    // Xử lý khi chụp ảnh
     document.getElementById('take-snapshot').addEventListener('click', () => {
       const canvas = document.createElement('canvas');
       canvas.width = video.videoWidth;
@@ -1628,18 +2004,21 @@ async function openCamera() {
 
       // Lưu ảnh vào lịch sử
       const photoData = canvas.toDataURL('image/jpeg');
+      if (!photoHistory[selectedDirection]) {
+        photoHistory[selectedDirection] = [];
+      }
       photoHistory[selectedDirection].push({
         id: Date.now(),
         url: photoData,
         timestamp: new Date().toISOString(),
       });
 
-      // Đánh dấu tất cả mục checklist là hoàn thành
-      markAllItemsComplete();
-
       // Đóng camera
       stream.getTracks().forEach((track) => track.stop());
       cameraModal.remove();
+
+      // Đánh dấu tất cả mục checklist là hoàn thành
+      markAllItemsComplete();
 
       // Hiển thị thông báo thành công
       showToast('すべての項目が完了としてマークされました');
@@ -1656,7 +2035,6 @@ async function openCamera() {
   } catch (error) {
     console.error('Error accessing camera:', error);
     alert('カメラへのアクセスに失敗しました。設定で許可してください。');
-    // Fallback to file picker
     openFilePicker();
   }
 }
@@ -1896,38 +2274,34 @@ function updatePhotoHistoryButton() {
   if (!cameraButton) return;
 
   // Kiểm tra xem có ảnh nào không
-  const hasPhotos =
-    photoHistory[selectedDirection] &&
-    photoHistory[selectedDirection].length > 0;
+  const photos = photoHistory[selectedDirection] || [];
+  const hasPhotos = photos.length > 0;
 
-  if (hasPhotos) {
-    // Nếu có ảnh và nút chưa tồn tại, tạo nút mới
-    if (!historyButton) {
-      const newHistoryButton = document.createElement('button');
-      newHistoryButton.id = 'photo-history-button';
-      newHistoryButton.className = 'photo-history-button';
-      newHistoryButton.innerHTML = `
-        <span class="material-icons">collections</span>
-        <span class="photo-count">${photoHistory[selectedDirection].length}</span>
-      `;
+  if (!historyButton) {
+    // Tạo mới nút nếu chưa tồn tại
+    const newHistoryButton = document.createElement('button');
+    newHistoryButton.id = 'photo-history-button';
+    newHistoryButton.className = 'photo-history-button';
+    newHistoryButton.innerHTML = `
+      <span class="material-icons">collections</span>
+      <span class="photo-count">${photos.length}</span>
+    `;
 
-      // Thêm vào trước nút camera
-      cameraButton.parentNode.insertBefore(newHistoryButton, cameraButton);
-
-      // Thêm sự kiện click
-      newHistoryButton.addEventListener('click', () => {
-        showPhotoHistory();
-      });
-    }
-    // Nếu nút đã tồn tại, chỉ cập nhật số lượng
-    else {
-      const countElement = historyButton.querySelector('.photo-count');
-      if (countElement) {
-        countElement.textContent = photoHistory[selectedDirection].length;
-      }
-    }
+    newHistoryButton.addEventListener('click', () => {
+      showPhotoHistory();
+    });
   } else {
-    // Nếu không có ảnh và nút tồn tại, xóa nút
+    // Cập nhật số lượng nếu nút đã tồn tại
+    const countElement = historyButton.querySelector('.photo-count');
+    if (countElement) {
+      countElement.textContent = photos.length;
+    }
+  }
+
+  // Nếu có ảnh
+  if (hasPhotos) {
+    cameraButton.parentNode.insertBefore(newHistoryButton, cameraButton);
+  } else {
     if (historyButton) {
       historyButton.remove();
     }
@@ -1971,7 +2345,7 @@ function showItemPhotos(itemId) {
     <div class="gallery-content">
       <div class="gallery-header">
         <h3>${item.name} の写真</h3>
-        <button class="close-gallery">
+        <button class="close-modal">
           <span class="material-icons">close</span>
         </button>
       </div>
@@ -1989,15 +2363,43 @@ function showItemPhotos(itemId) {
 
   document.body.appendChild(galleryModal);
 
-  // Hiển thị modal với animation
-  setTimeout(() => {
+  requestAnimationFrame(() => {
     galleryModal.classList.add('show');
-  }, 10);
+  });
 
   // Xử lý đóng gallery
-  galleryModal.querySelector('.close-gallery').addEventListener('click', () => {
+  galleryModal.querySelector('.close-modal').addEventListener('click', () => {
     galleryModal.classList.remove('show');
     setTimeout(() => galleryModal.remove(), 300);
+  });
+
+  let startY = 0;
+  let currentY = 0;
+  const content = galleryModal.querySelector('.gallery-content');
+
+  content.addEventListener('touchstart', (e) => {
+    startY = e.touches[0].clientY;
+  });
+
+  content.addEventListener('touchmove', (e) => {
+    currentY = e.touches[0].clientY;
+    const diff = currentY - startY;
+
+    if (diff > 0) {
+      // Chỉ cho phép vuốt xuống
+      content.style.transform = `translateY(${diff}px)`;
+    }
+  });
+
+  content.addEventListener('touchend', () => {
+    const diff = currentY - startY;
+    if (diff > 100) {
+      // Nếu vuốt đủ xa
+      galleryModal.classList.remove('show');
+      setTimeout(() => galleryModal.remove(), 300);
+    } else {
+      content.style.transform = '';
+    }
   });
 
   // Xử lý nút thêm ảnh

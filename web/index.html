@@ -19,18 +19,18 @@
     <div class="container">
       <!-- Progress Section -->
       <div class="progress-container">
-        <div class="progress-text-container">
-          <span class="progress-text"
-            >進捗状況: <span id="completed-items">0</span>/<span
-              id="total-items"
-              >0</span
-            >
-            項目</span
-          >
-          <span class="progress-percentage" id="progress-percentage">0%</span>
+        <div class="progress-info">
+          <span class="progress-text">進捗状況: </span>
+          <span class="progress-count">
+            <span id="completed-items">0</span>/<span id="total-items">0</span>
+          </span>
         </div>
-        <div class="progress-bar-background">
-          <div class="progress-bar" id="progress-bar"></div>
+
+        <div class="progress-bar-container">
+          <div class="progress-bar-background">
+            <div class="progress-bar" id="progress-bar"></div>
+          </div>
+          <span class="progress-percentage" id="progress-percentage">0%</span>
         </div>
       </div>
 
@@ -56,8 +56,34 @@
         </div>
       </div>
 
+      <!-- Filter Section -->
+      <!-- <div class="filter-container">
+        <div class="filter-buttons">
+          <button class="filter-button active" data-filter="all">
+            <span class="material-icons">list</span>
+            <span>全て</span>
+          </button>
+          <button class="filter-button" data-filter="pending">
+            <span class="material-icons">pending</span>
+            <span>未確認</span>
+          </button>
+          <button class="filter-button" data-filter="completed">
+            <span class="material-icons">check_circle</span>
+            <span>完了</span>
+          </button>
+          <button class="filter-button" data-filter="issue">
+            <span class="material-icons">warning</span>
+            <span>問題あり</span>
+          </button>
+        </div>
+      </div> -->
+
       <!-- Blueprint Section -->
       <div class="blueprint-container">
+        <div class="vertical-filter-container">
+          <!-- Filter buttons sẽ được thêm vào đây -->
+        </div>
+
         <div class="zoom-controls">
           <button class="zoom-button" id="zoom-in">
             <span class="material-icons">add_circle</span>
@@ -120,7 +146,12 @@
 
       <!-- Checklist Section -->
       <div class="checklist-container">
-        <h2 class="section-title">チェックリスト:</h2>
+        <h2 class="section-title">チェックリスト</h2>
+        <div class="checklist-header">
+          <div class="checklist-header">
+            <div class="checklist-filters" id="detail-filters"></div>
+          </div>
+        </div>
         <div class="checklist" id="checklist"></div>
       </div>
     </div>
@@ -179,9 +210,6 @@
         <span class="material-icons">close</span>
       </button>
     </div>
-
-    <!-- Thêm vào trong issue-modal -->
-    <div id="pinned-icons-info" class="pinned-icons-info"></div>
 
     <script src="data.js"></script>
     <script src="script.js"></script>
