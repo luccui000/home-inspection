@@ -584,56 +584,49 @@ function startDrag(e) {
     return;
   }
 
-  const handleStartDrag = () => {
-    isDragging = true;
+  // Lấy tọa độ touch/mouse
+  const touch = e.touches ? e.touches[0] : e;
+  const startX = touch.clientX;
+  const startY = touch.clientY;
 
-    // Tạo phần tử icon được kéo
-    dragIcon = document.createElement('div');
-    dragIcon.className = 'dragged-icon';
-    dragIcon.style.position = 'absolute';
-    dragIcon.style.zIndex = '9999';
-    dragIcon.style.pointerEvents = 'none'; // Quan trọng: không chặn sự kiện chuột
-    dragIcon.style.transform = 'scale(1.2)'; // Phóng to một chút để dễ nhìn
+  // Tạo phần tử icon được kéo
+  dragIcon = document.createElement('div');
+  dragIcon.className = 'dragged-icon';
+  dragIcon.style.position = 'fixed';
+  dragIcon.style.zIndex = '9999';
+  dragIcon.style.pointerEvents = 'none';
+  dragIcon.style.transform = 'translate(-50%, -50%) scale(1.2)';
+  dragIcon.style.left = `${startX}px`;
+  dragIcon.style.top = `${startY}px`;
 
-    // Tạo icon dựa trên hình dạng được chọn
-    let iconHTML = '';
+  // Tạo icon dựa trên hình dạng được chọn
+  let iconHTML = '';
+  switch (selectedShape.shape) {
+    case 'circle':
+      iconHTML = `<div class="circle-shape" style="background-color: ${selectedShape.color}; width: 24px; height: 24px; border: 2px solid white;"></div>`;
+      break;
+    case 'triangle':
+      iconHTML = `
+      <div class="triangle-container" style="width: 24px; height: 24px;">
+        <div class="triangle-shape" style="border-bottom-color: ${selectedShape.color}; border-bottom-width: 24px; border-left-width: 12px; border-right-width: 12px; border: 2px solid white;"></div>
+      </div>`;
+      break;
+    case 'square':
+      iconHTML = `<div class="square-shape" style="background-color: ${selectedShape.color}; width: 24px; height: 24px; border: 2px solid white;"></div>`;
+      break;
+    case 'diamond':
+      iconHTML = `
+      <div class="diamond-container" style="width: 24px; height: 24px;">
+        <div class="diamond-shape" style="background-color: ${selectedShape.color}; width: 16px; height: 16px; border: 2px solid white;"></div>
+      </div>`;
+      break;
+  }
 
-    switch (selectedShape.shape) {
-      case 'circle':
-        iconHTML = `<div class="circle-shape" style="background-color: ${selectedShape.color}; width: 24px; height: 24px; border: 2px solid white;"></div>`;
-        break;
-      case 'triangle':
-        iconHTML = `
-        <div class="triangle-container" style="width: 24px; height: 24px;">
-          <div class="triangle-shape" style="border-bottom-color: ${selectedShape.color}; border-bottom-width: 24px; border-left-width: 12px; border-right-width: 12px; border: 2px solid white;"></div>
-        </div>`;
-        break;
-      case 'square':
-        iconHTML = `<div class="square-shape" style="background-color: ${selectedShape.color}; width: 24px; height: 24px; border: 2px solid white;"></div>`;
-        break;
-      case 'diamond':
-        iconHTML = `
-        <div class="diamond-container" style="width: 24px; height: 24px;">
-          <div class="diamond-shape" style="background-color: ${selectedShape.color}; width: 16px; height: 16px; border: 2px solid white;"></div>
-        </div>`;
-        break;
-    }
+  dragIcon.innerHTML = iconHTML;
+  document.body.appendChild(dragIcon);
 
-    dragIcon.innerHTML = iconHTML;
-    document.body.appendChild(dragIcon);
-
-    // Đặt vị trí ban đầu
-    handleDrag(e);
-
-    // Debug
-    console.log('Start dragging', selectedShape);
-  };
-
-  // Thực hiện startDrag sau một khoảng thời gian ngắn
-  // Điều này giúp ngăn chặn lỗi khi không đủ thời gian khởi tạo
-  setTimeout(() => {
-    handleStartDrag();
-  }, 200);
+  isDragging = true;
+  console.log('Start dragging', selectedShape);
 }
 
 // Thay đổi từ let selectShape = null thành:
@@ -680,22 +673,14 @@ function handleDrag(e) {
     return;
   }
 
-  // Nếu là sự kiện chạm, sử dụng tọa độ chạm đầu tiên
-  let clientX, clientY;
+  // Lấy tọa độ touch/mouse
+  const touch = e.touches ? e.touches[0] : e;
+  const clientX = touch.clientX;
+  const clientY = touch.clientY;
 
-  if (e.touches && e.touches[0]) {
-    clientX = e.touches[0].clientX;
-    clientY = e.touches[0].clientY;
-  } else if (e.clientX !== undefined && e.clientY !== undefined) {
-    clientX = e.clientX;
-    clientY = e.clientY;
-  } else {
-    console.log('Không thể xác định tọa độ từ sự kiện');
-    return;
-  }
-
-  dragIcon.style.left = `${clientX - 12}px`;
-  dragIcon.style.top = `${clientY - 12}px`;
+  // Cập nhật vị trí icon
+  dragIcon.style.left = `${clientX}px`;
+  dragIcon.style.top = `${clientY}px`;
 }
 
 function endDrag(e) {
@@ -720,22 +705,10 @@ function endDrag(e) {
   const centerX = rect.width / 2;
   const centerY = rect.height / 2;
 
-  // Nếu là sự kiện chạm, sử dụng tọa độ chạm đầu tiên
-  let clientX, clientY;
-
-  if (e.touches && e.touches[0]) {
-    clientX = e.touches[0].clientX;
-    clientY = e.touches[0].clientY;
-  } else if (e.changedTouches && e.changedTouches[0]) {
-    clientX = e.changedTouches[0].clientX;
-    clientY = e.changedTouches[0].clientY;
-  } else if (e.clientX !== undefined && e.clientY !== undefined) {
-    clientX = e.clientX;
-    clientY = e.clientY;
-  } else {
-    console.log('Không thể xác định tọa độ từ sự kiện');
-    return;
-  }
+  // Lấy tọa độ touch/mouse
+  const touch = e.changedTouches ? e.changedTouches[0] : e;
+  const clientX = touch.clientX;
+  const clientY = touch.clientY;
 
   // Kiểm tra xem điểm thả có nằm trong khu vực blueprint không
   if (
@@ -745,7 +718,7 @@ function endDrag(e) {
     clientY > rect.bottom
   ) {
     console.log('Thả ra ngoài khu vực blueprint, hủy icon');
-    return; // Thoát khỏi hàm sớm nếu thả ra ngoài, không thêm icon vào danh sách
+    return;
   }
 
   // Tính toán tọa độ tương đối so với blueprint
@@ -774,10 +747,7 @@ function endDrag(e) {
   updateBlueprintIcons();
 
   const matchingItems = checklist.filter((item) => {
-    // Chỉ xem xét các mục trong cùng hướng hiện tại
     if (item.direction !== selectedDirection) return false;
-
-    // Kiểm tra xem icon có khớp với item không
     const iconConfig = getItemIconConfig(item.part, item.detail);
     return (
       iconConfig.shape === selectedShape.shape &&
@@ -785,18 +755,12 @@ function endDrag(e) {
     );
   });
 
-  // Nếu tìm thấy mục phù hợp
   if (matchingItems.length > 0) {
-    // Nếu có nhiều mục phù hợp, chọn mục đầu tiên
     const selectedItem = matchingItems[0];
-
-    // Lưu ID của icon vừa tạo vào item này
     if (!selectedItem.pinnedIcons) {
       selectedItem.pinnedIcons = [];
     }
     selectedItem.pinnedIcons.push(newIcon.id);
-
-    // Mở modal để chỉnh sửa và thêm ảnh
     openIssueModal(selectedItem);
   } else {
     console.log('Không tìm thấy checklist item phù hợp với icon này');
