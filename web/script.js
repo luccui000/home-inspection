@@ -533,7 +533,7 @@ function setupBlueprintInteractions() {
   // Cải thiện xử lý khi nhấp chuột trên blueprint
   blueprintImageContainer.addEventListener('click', (e) => {
     // Chỉ xử lý nếu đang không kéo và có hình được chọn
-    if (!isDragging && selectedShape) {
+    if (isDragging && selectedShape) {
       // Xử lý click trực tiếp trên blueprint
       const rect = blueprintImageContainer.getBoundingClientRect();
       const x = e.clientX - rect.left;
@@ -584,6 +584,12 @@ function startDrag(e) {
     return;
   }
 
+  // Xóa icon đang kéo cũ nếu có
+  const existingDragIcon = document.querySelector('.dragged-icon');
+  if (existingDragIcon) {
+    existingDragIcon.remove();
+  }
+
   // Lấy tọa độ touch/mouse
   const touch = e.touches ? e.touches[0] : e;
   const startX = touch.clientX;
@@ -613,12 +619,6 @@ function startDrag(e) {
       break;
     case 'square':
       iconHTML = `<div class="square-shape" style="background-color: ${selectedShape.color}; width: 24px; height: 24px; border: 2px solid white;"></div>`;
-      break;
-    case 'diamond':
-      iconHTML = `
-      <div class="diamond-container" style="width: 24px; height: 24px;">
-        <div class="diamond-shape" style="background-color: ${selectedShape.color}; width: 16px; height: 16px; border: 2px solid white;"></div>
-      </div>`;
       break;
   }
 
@@ -686,7 +686,6 @@ function handleDrag(e) {
 function endDrag(e) {
   if (!isDragging) return;
 
-  console.log('End dragging');
   isDragging = false;
 
   // Xóa icon đang kéo
@@ -707,7 +706,9 @@ function endDrag(e) {
   const clientY = touch.clientY;
 
   // Lấy kích thước và vị trí của blueprint image container
-  const blueprintImageContainer = document.querySelector('.blueprint-image-container');
+  const blueprintImageContainer = document.querySelector(
+    '.blueprint-image-container'
+  );
   const rect = blueprintImageContainer.getBoundingClientRect();
   const centerX = rect.width / 2;
   const centerY = rect.height / 2;
@@ -720,7 +721,6 @@ function endDrag(e) {
     clientY > rect.bottom
   ) {
     console.log('Thả ra ngoài khu vực blueprint, hủy icon');
-    showToast('アイコンを配置するには青写真の範囲内で離してください');
     return;
   }
 
@@ -1048,22 +1048,23 @@ async function handleItemAction(itemId, action) {
         // Yêu cầu quyền truy cập camera
         const stream = await navigator.mediaDevices.getUserMedia({
           video: {
-            facingMode: 'environment', // Ưu tiên camera sau
+            facingMode: 'environment',
             width: { ideal: 1280 },
             height: { ideal: 720 },
           },
         });
 
-        // Hiển thị stream camera
+        // Kết nối stream với video element
         const video = document.getElementById('camera-video-element');
         video.srcObject = stream;
+
+        // Đảm bảo video đã được load
         await video.play();
 
-        // Xử lý khi nhấn nút chụp ảnh
+        // Xử lý khi chụp ảnh
         document
           .getElementById('capture-photo-button')
           .addEventListener('click', () => {
-            // Tạo canvas để lấy ảnh từ video stream
             const canvas = document.createElement('canvas');
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
@@ -1072,8 +1073,10 @@ async function handleItemAction(itemId, action) {
             // Chuyển canvas thành URL hình ảnh
             const photoUrl = canvas.toDataURL('image/jpeg');
 
-            // Thêm ảnh vào danh sách ảnh của item
+            // Khởi tạo mảng photos nếu chưa có
             if (!item.photos) item.photos = [];
+
+            // Thêm ảnh mới
             item.photos.push({
               id: Date.now(),
               url: photoUrl,
@@ -1084,32 +1087,25 @@ async function handleItemAction(itemId, action) {
             stream.getTracks().forEach((track) => track.stop());
             cameraOverlay.remove();
 
-            // Cập nhật nút lịch sử ảnh
-            updatePhotoHistoryButton();
-
-            // Cập nhật lại giao diện
+            // Cập nhật giao diện
             updateChecklist();
 
             // Hiển thị thông báo
             showToast('写真が追加されました');
           });
 
-        // Xử lý khi nhấn nút hủy
+        // Xử lý khi hủy
         document
           .getElementById('cancel-photo-button')
           .addEventListener('click', () => {
-            // Đóng camera
             stream.getTracks().forEach((track) => track.stop());
             cameraOverlay.remove();
           });
       } catch (error) {
-        console.error('Camera access error:', error);
-        // Fallback nếu không thể truy cập camera
-        alert(
-          'カメラへのアクセスができませんでした。カメラの許可を確認してください。'
-        );
+        console.error('Camera error:', error);
+        alert('カメラへのアクセスができませんでした。');
 
-        // Sử dụng input file như là fallback
+        // Fallback sử dụng input file
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = 'image/*';
@@ -1122,6 +1118,7 @@ async function handleItemAction(itemId, action) {
 
             reader.onload = (event) => {
               if (!item.photos) item.photos = [];
+
               item.photos.push({
                 id: Date.now(),
                 url: event.target.result,
@@ -1269,7 +1266,7 @@ function openIssueModal(item) {
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
         const photoUrl = canvas.toDataURL('image/jpeg', 0.8);
-        
+
         if (!item.photos) item.photos = [];
         item.photos.push({
           id: Date.now(),
@@ -1277,7 +1274,7 @@ function openIssueModal(item) {
           timestamp: new Date().toISOString(),
         });
 
-        stream.getTracks().forEach(track => track.stop());
+        stream.getTracks().forEach((track) => track.stop());
         cameraOverlay.remove();
         updatePhotoList();
         showToast('写真が追加されました');
@@ -1285,7 +1282,7 @@ function openIssueModal(item) {
 
       // Xử lý hủy bỏ
       cameraOverlay.querySelector('#cancel-photo-button').onclick = () => {
-        stream.getTracks().forEach(track => track.stop());
+        stream.getTracks().forEach((track) => track.stop());
         cameraOverlay.remove();
       };
     } catch (error) {

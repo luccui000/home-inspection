@@ -4,6 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Inspection</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
     <link rel="stylesheet" href="style.css" />
     <link
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
@@ -81,19 +86,33 @@
       <div class="shapes-toolbar">
         <div class="shapes-container">
           <button class="shape-button" data-shape="circle" data-color="#ef4444">
-            <div class="circle-shape" style="background-color: #ef4444;"></div>
+            <div class="circle-shape" style="background-color: #ef4444"></div>
           </button>
-          <button class="shape-button" data-shape="triangle" data-color="#f59e0b">
+          <button
+            class="shape-button"
+            data-shape="triangle"
+            data-color="#f59e0b"
+          >
             <div class="triangle-container">
-              <div class="triangle-shape" style="border-bottom-color: #f59e0b;"></div>
+              <div
+                class="triangle-shape"
+                style="border-bottom-color: #f59e0b"
+              ></div>
             </div>
           </button>
           <button class="shape-button" data-shape="square" data-color="#10b981">
-            <div class="square-shape" style="background-color: #10b981;"></div>
+            <div class="square-shape" style="background-color: #10b981"></div>
           </button>
-          <button class="shape-button" data-shape="diamond" data-color="#3b82f6">
+          <button
+            class="shape-button"
+            data-shape="diamond"
+            data-color="#3b82f6"
+          >
             <div class="diamond-container">
-              <div class="diamond-shape" style="background-color: #3b82f6;"></div>
+              <div
+                class="diamond-shape"
+                style="background-color: #3b82f6"
+              ></div>
             </div>
           </button>
         </div>
@@ -131,17 +150,17 @@
 
           <!-- Photo Section -->
           <div class="photo-section">
+            <!-- Photo List -->
+            <div class="photo-list-container">
+              <h4 class="photo-list-title">撮影した写真:</h4>
+              <div class="photo-list" id="issue-photo-list"></div>
+            </div>
+
             <div class="photo-controls">
               <button class="take-picture-button" id="take-picture-button">
                 <span class="material-icons">camera</span>
                 <span>写真を撮る</span>
               </button>
-            </div>
-
-            <!-- Photo List -->
-            <div class="photo-list-container">
-              <h4 class="photo-list-title">撮影した写真:</h4>
-              <div class="photo-list" id="issue-photo-list"></div>
             </div>
           </div>
 
@@ -151,17 +170,20 @@
     </div>
 
     <!-- Camera Preview Modal -->
-    <div class="camera-preview" id="camera-preview" style="display: none;">
+    <div class="camera-preview" id="camera-preview" style="display: none">
       <video id="camera-video"></video>
       <button class="capture-button" id="capture-button">
         <span class="material-icons">camera</span>
-        <span>撮影</span>
       </button>
       <button class="close-camera-button" id="close-camera-button">
         <span class="material-icons">close</span>
       </button>
     </div>
 
+    <!-- Thêm vào trong issue-modal -->
+    <div id="pinned-icons-info" class="pinned-icons-info"></div>
+
+    <script src="data.js"></script>
     <script src="script.js"></script>
   </body>
 </html>
