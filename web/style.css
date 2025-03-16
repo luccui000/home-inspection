@@ -289,7 +289,6 @@ body {
 .shape-icon {
   width: 18px;
   height: 18px;
-  border-radius: 9px;
   margin-right: 12px;
 }
 
@@ -319,7 +318,7 @@ body {
   display: none;
   justify-content: flex-end;
   align-items: flex-end;
-  z-index: 1000;
+  z-index: 999999999;
 }
 
 .modal-content {
@@ -347,20 +346,18 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  background-color: var(--primary-color);
+  color: #000;
 }
 
 .modal-title {
   font-size: 18px;
   font-weight: 600;
-  color: var(--white);
   margin: 0;
 }
 
 .close-modal {
   background: none;
   border: none;
-  color: var(--white);
   padding: 8px;
   border-radius: 50%;
   cursor: pointer;
@@ -535,16 +532,67 @@ body {
 }
 
 .shape-button {
-  background: none;
-  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 8px;
   border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.shape-button:hover {
-  background-color: var(--secondary-color);
+.shape-button.selected-shape {
+  background-color: rgba(37, 99, 235, 0.1);
+  border: 2px solid #2563eb;
+}
+
+.shape-button.drag-active {
+  background-color: rgba(37, 99, 235, 0.1);
+}
+
+.shape-icon-container {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.circle-shape {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+
+.square-shape {
+  width: 24px;
+  height: 24px;
+}
+
+.triangle-container {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.triangle-shape {
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 12px 20px 12px;
+  border-color: transparent transparent #ef4444 transparent;
+}
+
+.shape-label {
+  font-size: 12px;
+  margin-top: 4px;
+  color: #4b5563;
 }
 
 .circle-shape {
@@ -608,7 +656,6 @@ body {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  border: 2px solid white;
 }
 
 .pinned-triangle {
@@ -622,13 +669,11 @@ body {
 .pinned-square {
   width: 24px;
   height: 24px;
-  border: 2px solid white;
 }
 
 .pinned-diamond {
   width: 16px;
   height: 16px;
-  border: 2px solid white;
 }
 
 .dragged-icon {
@@ -792,3 +837,653 @@ body {
   justify-content: center;
   cursor: pointer;
 }
+/* Styles for dropzone highlights */
+.blueprint-image-container.dropzone-active {
+  outline: 2px dashed rgba(37, 99, 235, 0.5);
+}
+
+.blueprint-image-container.drop-highlight {
+  outline: 3px dashed rgb(37, 99, 235);
+  background-color: rgba(219, 234, 254, 0.2);
+}
+
+/* Improve dragged icon appearance */
+.dragged-icon {
+  filter: drop-shadow(0 0 4px rgba(0,0,0,0.3));
+  cursor: grabbing;
+}
+
+/* Make blueprint help text visible */
+.blueprint-help-text {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 100;
+}
+
+/* Thêm vào file style.css */
+.shape-button, 
+.dragged-icon, 
+.circle-shape, 
+.triangle-shape, 
+.square-shape, 
+.diamond-shape,
+.triangle-container,
+.diamond-container {
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Chrome, Opera and others */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Ngăn chặn hiệu ứng "highlight" khi chạm vào */
+* {
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+
+
+.shape-button:active {
+  transform: scale(0.95);
+  background-color: rgba(0,0,0,0.05);
+  transition: transform 0.1s ease;
+}
+
+/* Hiển thị phản hồi trực quan khi nhấn giữ */
+.shape-button.drag-active {
+  background-color: rgba(37, 99, 235, 0.1);
+}
+
+/* Thêm vào file style.css */
+
+/* Toast notification */
+.toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 20px;
+  z-index: 1000;
+  transition: transform 0.3s ease;
+  font-size: 14px;
+}
+
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Camera button and history button */
+.camera-button, .photo-history-button {
+  position: absolute;
+  bottom: 12px;
+  padding: 8px 12px;
+  background-color: #6366f1;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.camera-button {
+  right: 12px;
+}
+
+.photo-history-button {
+  right: 130px; /* Đặt bên trái của nút camera */
+  padding: 8px;
+}
+
+.photo-count {
+  background-color: white;
+  color: #6366f1;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Camera modal */
+.camera-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: black;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.camera-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#camera-video-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.camera-controls {
+  position: absolute;
+  bottom: 30px;
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  width: 100%;
+}
+
+.camera-controls .camera-button {
+  position: static;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+}
+
+.camera-controls .camera-button .material-icons {
+  font-size: 30px;
+  
+}
+
+.photo-indicator .material-icons {
+  width: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-left: 10px;
+}
+
+/* Photo history modal */
+.photo-history-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.photo-history-modal.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.photo-history-content {
+  background-color: white;
+  width: 100%;
+  max-height: 80vh;
+  border-radius: 20px 20px 0 0;
+  padding: 20px;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+}
+
+.photo-history-modal.show .photo-history-content {
+  transform: translateY(0);
+}
+
+.photo-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.photo-history-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.close-history {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.photo-history-body {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.history-photo-item {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.history-photo-item img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  display: block;
+}
+
+.history-photo-actions {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 8px;
+}
+
+.history-photo-actions button {
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.history-photo-time {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
+.no-photos {
+  grid-column: span 2;
+  text-align: center;
+  color: #666;
+  padding: 20px;
+}
+
+/* Fullscreen photo view */
+.fullscreen-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.9);
+  z-index: 1100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.fullscreen-modal.show {
+  opacity: 1;
+}
+
+.fullscreen-photo-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.fullscreen-photo-container img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.close-fullscreen {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+/* Thêm các style cho camera overlay */
+.camera-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: black;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.camera-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+#camera-video-element {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.camera-controls {
+  position: absolute;
+  bottom: 40px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 48px;
+}
+
+.capture-button {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: white;
+  border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.capture-button .material-icons {
+  font-size: 32px;
+  color: #2563eb;
+}
+
+.cancel-button {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.5);
+  border: 2px solid white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.cancel-button .material-icons {
+  font-size: 24px;
+  color: white;
+}
+
+/* Styles cho photo indicator trong checklist */
+.photo-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background-color: rgba(37, 99, 235, 0.1);
+  padding: 4px 8px;
+  border-radius: 16px;
+  cursor: pointer;
+}
+
+.photo-indicator .material-icons {
+  font-size: 16px;
+  color: #3b82f6;
+}
+
+.photo-count {
+  font-size: 12px;
+  font-weight: 500;
+  color: #3b82f6;
+}
+
+/* Styles cho photo gallery modal */
+.photo-gallery-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.photo-gallery-modal.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.gallery-content {
+  background-color: white;
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.gallery-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.gallery-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.gallery-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.gallery-photo-item {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.gallery-photo-item img {
+  width: 100%;
+  aspect-ratio: 3/4;
+  object-fit: cover;
+  display: block;
+}
+
+.photo-actions {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+.delete-gallery-photo {
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.photo-timestamp {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  font-size: 10px;
+  padding: 4px 8px;
+  text-align: center;
+}
+
+.gallery-footer {
+  padding: 16px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: center;
+}
+
+.add-photo-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* Styles cho fullsize photo modal */
+.fullsize-photo-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.9);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.fullsize-photo-modal.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.fullsize-photo-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fullsize-photo-container img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.close-fullsize {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+#pinned-icons-info {
+  background-color: rgba(37, 99, 235, 0.1);
+  border-radius: 4px;
+  color: #2563eb;
+  font-size: 12px;
+  padding: 8px;
+  margin-bottom: 12px;
+  display: none;
+}
+
+.pinned-icon {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  z-index: 10;
+}
+
+.pinned-icon:hover {
+  transform: translate(-50%, -50%) scale(1.2);
+  z-index: 11;
+}
+
+.pinned-icon:active {
+  transform: translate(-50%, -50%) scale(0.9);
+}
+ 
