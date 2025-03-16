@@ -718,6 +718,31 @@ function endDrag(e) {
     clientY > rect.bottom
   ) {
     console.log('Thả ra ngoài khu vực blueprint, hủy icon');
+    
+    // Nếu có selectedItem thì xóa nó
+    const matchingItems = checklist.filter((item) => {
+      if (item.direction !== selectedDirection) return false;
+      const iconConfig = getItemIconConfig(item.part, item.detail);
+      return (
+        iconConfig.shape === selectedShape.shape &&
+        iconConfig.color === selectedShape.color
+      );
+    });
+
+    if (matchingItems.length > 0) {
+      const selectedItem = matchingItems[0];
+      if (selectedItem.pinnedIcons && selectedItem.pinnedIcons.length > 0) {
+        // Xóa các icon liên quan
+        pinnedIcons = pinnedIcons.filter(
+          (icon) => !selectedItem.pinnedIcons.includes(icon.id)
+        );
+        // Xóa pinnedIcons khỏi item
+        selectedItem.pinnedIcons = [];
+        // Cập nhật hiển thị
+        updateBlueprintIcons();
+      }
+    }
+    
     return;
   }
 
