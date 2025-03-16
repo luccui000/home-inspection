@@ -19,6 +19,7 @@ const DETAIL_TYPES = [
   { id: 'window', name: '窓', icon: 'window' },
   { id: 'door', name: 'ドア', icon: 'door_front' },
 ];
+
 let checklist = [];
 
 // State
@@ -73,29 +74,23 @@ document.addEventListener('DOMContentLoaded', () => {
     { passive: false }
   );
 
-  if (window.checklistItems && window.checklistItems.length > 0) {
-    checklist = [...window.checklistItems];
-    console.log('Checklist loaded with', checklist.length, 'items');
-  } else {
-    console.error('No checklist items found in data.js');
-    checklist = []; // Set to empty array to prevent errors
-  }
-
   // Set default direction to north
   selectedDirection = 'north';
   console.log('Default direction set to:', selectedDirection);
 
+  loadChecklist();
   setupShapeButtons();
   setupShapeButtonEvents();
   initDirection();
   setupPartFilters();
   updateDetailFilters();
-  loadChecklist();
   setupDirectionButtons();
   setupBlueprintInteractions();
   setupCameraButton(); // Thêm setup cho nút camera
   addPhotoHistoryButton(); // Thêm nút lịch sử ảnh
   updateProgress();
+
+  updateChecklist();
 });
 
 // Get unique details for a part and direction
@@ -117,7 +112,7 @@ function getDetailsForPart(part) {
   const itemsInDirection = checklist.filter(
     (item) => item.direction === selectedDirection
   );
-  console.log('Items in direction:', itemsInDirection.length);
+  console.log('Items in direction:', itemsInDirection);
 
   let details = [];
 
@@ -155,7 +150,7 @@ function setupPartFilters() {
       selectedPart = button.dataset.part;
 
       // Reset detail selection
-      selectedDetail = 'all';
+      // selectedDetail = 'all';
 
       // Update detail filters
       updateDetailFilters();
