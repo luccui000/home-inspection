@@ -1257,6 +1257,29 @@ function openIssueModal(item) {
   const takePictureButton = document.getElementById('take-picture-button');
   takePictureButton.onclick = async () => {
     try {
+      // Kiểm tra xem thiết bị có hỗ trợ camera không
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Camera not supported');
+      }
+
+      // Tạo overlay camera
+      const cameraOverlay = document.createElement('div');
+      cameraOverlay.className = 'camera-overlay';
+      cameraOverlay.innerHTML = `
+        <div class="camera-container">
+          <video id="camera-video-element" autoplay playsinline></video>
+          <div class="camera-controls">
+            <button id="capture-photo-button" class="capture-button">
+              <span class="material-icons">camera</span>
+            </button>
+            <button id="cancel-photo-button" class="cancel-button">
+              <span class="material-icons">close</span>
+            </button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(cameraOverlay);
+
       // Yêu cầu quyền truy cập camera
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
@@ -1266,59 +1289,38 @@ function openIssueModal(item) {
         },
       });
 
-      // Hiển thị stream camera
-      const video = document.getElementById('camera-video-element');
+      const video = cameraOverlay.querySelector('#camera-video-element');
       video.srcObject = stream;
+      await video.play();
 
-      // Đảm bảo video đã sẵn sàng để phát
-      await new Promise((resolve) => {
-        video.onloadedmetadata = () => {
-          video.play().then(resolve);
-        };
-      });
+      // Xử lý chụp ảnh
+      cameraOverlay.querySelector('#capture-photo-button').onclick = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      // Xử lý khi nhấn nút chụp ảnh
-      document
-        .getElementById('capture-photo-button')
-        .addEventListener('click', () => {
-          // Tạo canvas để lấy ảnh từ video stream
-          const canvas = document.createElement('canvas');
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          canvas.getContext('2d').drawImage(video, 0, 0);
-
-          // Chuyển canvas thành URL hình ảnh
-          const photoUrl = canvas.toDataURL('image/jpeg');
-
-          // Khởi tạo mảng photos nếu chưa có
-          if (!item.photos) item.photos = [];
-
-          // Thêm ảnh vào danh sách ảnh của item
-          item.photos.push({
-            id: Date.now(),
-            url: photoUrl,
-            timestamp: new Date().toISOString(),
-          });
-
-          // Đóng camera
-          stream.getTracks().forEach((track) => track.stop());
-          cameraOverlay.remove();
-
-          // Cập nhật danh sách ảnh
-          updatePhotoList();
-
-          // Hiển thị thông báo
-          showToast('写真が追加されました');
+        const photoUrl = canvas.toDataURL('image/jpeg', 0.8);
+        
+        if (!item.photos) item.photos = [];
+        item.photos.push({
+          id: Date.now(),
+          url: photoUrl,
+          timestamp: new Date().toISOString(),
         });
 
-      // Xử lý khi nhấn nút hủy
-      document
-        .getElementById('cancel-photo-button')
-        .addEventListener('click', () => {
-          // Đóng camera
-          stream.getTracks().forEach((track) => track.stop());
-          cameraOverlay.remove();
-        });
+        stream.getTracks().forEach(track => track.stop());
+        cameraOverlay.remove();
+        updatePhotoList();
+        showToast('写真が追加されました');
+      };
+
+      // Xử lý hủy bỏ
+      cameraOverlay.querySelector('#cancel-photo-button').onclick = () => {
+        stream.getTracks().forEach(track => track.stop());
+        cameraOverlay.remove();
+      };
     } catch (error) {
       console.error('Camera error:', error);
       alert('カメラにアクセスできません。権限を確認してください。');
