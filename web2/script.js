@@ -20,7 +20,7 @@ const DETAIL_TYPES = [
   { id: 'door', name: 'ドア', icon: 'door_front' },
 ];
 
-let checklist = [];
+let checklist = checklistItems;
 
 // State
 let selectedDirection = 'north';
@@ -42,9 +42,6 @@ let photoHistory = {
   west: [],
 };
 let selectedFilter = 'all';
-// Thêm state variables
-let isFilterOpen = false;
-let activeFilterButton = null;
 // State variables
 
 // DOM Elements
@@ -58,6 +55,7 @@ const progressPercentageEl = document.getElementById('progress-percentage');
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
+  loadChecklist();
   // Initialize
   document.addEventListener('contextmenu', (e) => {
     if (e.target.closest('.shape-button, .pinned-icon, .blueprint-container')) {
@@ -79,21 +77,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Set default direction to north
   selectedDirection = 'north';
-  console.log('Default direction set to:', selectedDirection);
 
-  loadChecklist();
+  // Update direction buttons UI
+  updateDirectionButtons();
+  setupDirectionButtons();
+
+  // Setup part filters
+  setupPartFiltersForDirection();
+
+  // Update blueprint image
+  updateBlueprintImage();
+
+  // Initialize other components
   setupShapeButtons();
   setupShapeButtonEvents();
-  initDirection();
-  setupPartFilters();
-  updateDetailFilters();
-  setupDirectionButtons();
-  setupBlueprintInteractions();
-  setupCameraButton(); // Thêm setup cho nút camera
-  addPhotoHistoryButton(); // Thêm nút lịch sử ảnh
-  updateProgress();
-
   updateChecklist();
+  updateProgress();
+  updatePhotoHistoryButton();
+
+  setupDropdownPartFilter();
 });
 
 // Get unique details for a part and direction
@@ -137,115 +139,66 @@ function getDetailsForPart(part) {
   return details;
 }
 
-// Setup part filters
+// In setupPartFilters function
 function setupPartFilters() {
-  const filterButtons = document.querySelectorAll('.filter-button');
-  const detailFilters = document.getElementById('detail-filters');
-
-  // Add overlay if not exists
-  let overlay = document.querySelector('.filter-overlay');
-  if (!overlay) {
-    overlay = document.createElement('div');
-    overlay.className = 'filter-overlay';
-    document.body.appendChild(overlay);
-  }
+  const filterButtons = document.querySelectorAll(
+    '.part-filter-buttons .filter-button'
+  );
+  const detailDropdown = document.getElementById('detail-filter-dropdown');
 
   filterButtons.forEach((button) => {
     button.addEventListener('click', () => {
-      // Toggle behavior
-      filterButtons.forEach((b) => b.classList.remove('active'));
+      // Check if button has dropdown
+      const hasDropdown = button.querySelector('.dropdown-icon');
 
-      if (activeFilterButton === button) {
-        // Close if clicking active button
-        closeFilter();
+      // Update active state
+      filterButtons.forEach((btn) => btn.classList.remove('active'));
+      button.classList.add('active');
+
+      // Update selected part
+      selectedPart = button.dataset.part;
+
+      // Update detail filters
+      updateDetailFilters();
+
+      // Show detail filter dropdown if button has dropdown
+      if (hasDropdown) {
+        // Add sliding animation
+        if (detailDropdown.classList.contains('open')) {
+          // If already open, close and reopen with new content
+          detailDropdown.classList.remove('open');
+          setTimeout(() => {
+            detailDropdown.classList.add('open');
+          }, 10);
+        } else {
+          detailDropdown.classList.add('open');
+        }
       } else {
-        // Open for new button
-        openFilter(button);
+        // Hide dropdown if no details
+        detailDropdown.classList.remove('open');
       }
+
+      // Update checklist
+      updateChecklist();
     });
   });
 
-  function openFilter(button) {
-    // Close previous if any
-    if (activeFilterButton) {
-      activeFilterButton.classList.remove('active');
-      activeFilterButton.querySelector('.dropdown-icon').style.transform =
-        'rotate(0deg)';
-    }
-
-    // Update states
-    isFilterOpen = true;
-    activeFilterButton = button;
-
-    // Update UI
-    button.classList.add('active');
-    const dropdownIcon = button.querySelector('.dropdown-icon');
-    if (dropdownIcon) {
-      dropdownIcon.style.transform = 'rotate(180deg)';
-    }
-
-    // Show dropdown and overlay
-    detailFilters.classList.add('open');
-    overlay.classList.add('show');
-
-    // Update filters content
-    selectedPart = button.dataset.part;
-    updateDetailFilters();
-  }
-
-  function closeFilter() {
-    if (!isFilterOpen) return;
-
-    isFilterOpen = false;
-    if (activeFilterButton) {
-      // activeFilterButton.classList.remove('active');
-      const dropdownIcon = activeFilterButton.querySelector('.dropdown-icon');
-      if (dropdownIcon) {
-        dropdownIcon.style.transform = 'rotate(0deg)';
-      }
-      activeFilterButton = null;
-    }
-
-    const detailFilters = document.getElementById('detail-filters');
-    const overlay = document.querySelector('.filter-overlay');
-
-    if (detailFilters) {
-      detailFilters.classList.remove('open');
-    }
-
-    if (overlay) {
-      overlay.classList.remove('show');
-    }
-  }
-
-  // Close when clicking overlay
-  overlay.addEventListener('click', closeFilter);
-
+  // Close dropdown when clicking outside
   document.addEventListener('click', (e) => {
-    // Kiểm tra xem click có phải trên filter-chip không
-    if (e.target.closest('.filter-chip')) {
-      return; // Không đóng overlay nếu click vào filter-chip
-    }
-
-    // Chỉ đóng khi click ra ngoài cả filter button và detail filters
     if (
-      !e.target.closest('.filter-button') &&
-      !e.target.closest('#detail-filters')
+      !e.target.closest('.part-filter-buttons') &&
+      !e.target.closest('.detail-filter-dropdown')
     ) {
-      closeFilter();
+      detailDropdown.classList.remove('open');
     }
   });
 }
 
 function setupDetailFilters() {
   const filterChips = document.querySelectorAll('.filter-chip');
-  const overlay = document.querySelector('.filter-overlay');
 
   filterChips.forEach((chip) => {
-    chip.addEventListener('click', (e) => {
-      // Ngăn event bubbling lên document
-      e.stopPropagation();
-
+    chip.addEventListener('click', () => {
       const detail = chip.dataset.detail;
 
       if (detail === 'all') {
@@ -254,33 +207,26 @@ function setupDetailFilters() {
         filterChips.forEach((c) => c.classList.remove('active'));
         chip.classList.add('active');
       } else {
-        // Handle multiple selections
+        // Remove 'all' selection if exists
+        const allChip = document.querySelector(
+          '.filter-chip[data-detail="all"]'
+        );
+        if (allChip) allChip.classList.remove('active');
+
+        // Toggle selection
         const detailIndex = selectedDetails.indexOf(detail);
         if (detailIndex === -1) {
           // Add new detail
           selectedDetails.push(detail);
           chip.classList.add('active');
-
-          // Remove 'all' selection if exists
-          const allChip = document.querySelector(
-            '.filter-chip[data-detail="all"]'
-          );
-          if (allChip) {
-            allChip.classList.remove('active');
-          }
         } else {
           // Remove detail
           selectedDetails.splice(detailIndex, 1);
           chip.classList.remove('active');
 
           // If no details selected, activate 'all'
-          if (selectedDetails.length === 0) {
-            const allChip = document.querySelector(
-              '.filter-chip[data-detail="all"]'
-            );
-            if (allChip) {
-              allChip.classList.add('active');
-            }
+          if (selectedDetails.length === 0 && allChip) {
+            allChip.classList.add('active');
           }
         }
       }
@@ -291,27 +237,26 @@ function setupDetailFilters() {
   });
 }
 
-// Update detail filters based on selected direction and part
+// Update Detail Filters
 function updateDetailFilters() {
   const detailFilters = document.getElementById('detail-filters');
+  const detailDropdown = document.getElementById('detail-filter-dropdown');
 
-  // Debug line để kiểm tra
-  console.log('Detail filters element:', detailFilters);
+  if (!detailFilters) return;
 
-  if (!detailFilters) {
-    console.error('Could not find detail-filters element');
+  // Get details for selected part & direction
+  const details = getDetailsForPart(selectedPart);
+
+  if (details.length === 0) {
+    // If no details, hide dropdown
+    detailDropdown.classList.remove('open');
     return;
   }
 
-  // Get details for current direction and part
-  const details = getDetailsForPart(selectedPart);
-  console.log('Details found:', details);
-
-  // Create detail filter buttons
-  const detailButtons = ` 
+  // Create filter chips
+  const filterChips = ` 
     ${details
       .map((detail) => {
-        // Find corresponding detail type info
         const detailInfo = DETAIL_TYPES.find((d) => d.id === detail) || {
           id: detail,
           name: detail,
@@ -328,10 +273,9 @@ function updateDetailFilters() {
   `;
 
   // Update HTML
-  detailFilters.innerHTML = detailButtons;
-  console.log('Detail filters HTML updated');
+  detailFilters.innerHTML = filterChips;
 
-  // Reset selected details when updating filters
+  // Reset selected details
   selectedDetails = [];
 
   // Setup detail filter click handlers
@@ -350,18 +294,16 @@ function getPartsForDirection() {
 }
 
 // Update vertical part filters for current direction
+// Update vertical part filters for current direction
 function setupPartFiltersForDirection() {
-  console.log('Setting up part filters for direction:', selectedDirection);
-
-  const filterContainer = document.querySelector('.vertical-filter-container');
+  const filterContainer = document.getElementById('part-filters');
   if (!filterContainer) {
-    console.error('Vertical filter container not found');
+    console.error('Part filters container not found');
     return;
   }
 
   // Get parts for current direction
   const availableParts = getPartsForDirection();
-  console.log('Available parts:', availableParts);
 
   // Always include "all" option
   const buttonHTML = ` 
@@ -372,30 +314,36 @@ function setupPartFiltersForDirection() {
           name: part,
           icon: 'category',
         };
+
+        // Check if this part has details
+        const hasDetails = checklist.some(
+          (item) => item.direction === selectedDirection && item.part === part
+        );
+
+        // Add dropdown icon if has details
+        const dropdownIcon = hasDetails
+          ? `<span class="material-icons dropdown-icon">expand_more</span>`
+          : '';
+
         return `
-        <button class="filter-button" data-part="${part}">
-          <span>${partInfo.name}</span>
-            <span class="material-icons dropdown-icon">expand_more</span>
-        </button>
-      `;
+          <button class="filter-button" data-part="${part}">
+            <span>${partInfo.name}</span>
+            ${dropdownIcon}
+          </button>
+        `;
       })
       .join('')}
   `;
 
   // Update HTML
   filterContainer.innerHTML = buttonHTML;
-  console.log('Vertical filter HTML updated');
 
   // Reset selected part
   selectedPart = 'all';
 
   // Add event listeners to new buttons
-
-  const filterButtons = document.querySelectorAll('.filter-button');
-  filterButtons[0].classList.add('active');
   setupPartFilters();
 }
-
 // Get icon for detail type
 function getDetailIcon(detail) {
   const icons = {
@@ -418,6 +366,50 @@ function getDetailLabel(detail) {
     structure: '構造',
   };
   return labels[detail] || detail;
+}
+
+// Thêm hàm setup category filters
+function setupCategoryFilters() {
+  const filterChips = document.querySelectorAll('.filter-chip[data-category]');
+
+  filterChips.forEach((chip) => {
+    chip.addEventListener('click', () => {
+      // Remove active class from all chips
+      filterChips.forEach((c) => c.classList.remove('active'));
+
+      // Add active class to clicked chip
+      chip.classList.add('active');
+
+      // Update selected category
+      selectedCategory = chip.dataset.category;
+
+      // Update checklist
+      updateChecklist();
+    });
+  });
+}
+
+function setupDropdownPartFilter() {
+  const filterButtons = document.querySelectorAll('.filter-button');
+
+  filterButtons.forEach((filterButton) => {
+    filterButton.addEventListener('click', () => {
+      // if has class active, remove it
+      if (filterButton.classList.contains('active')) {
+        filterButton.classList.remove('active');
+        selectedPart = 'all';
+      } else {
+        // remove active class from all buttons
+        filterButtons.forEach((btn) => btn.classList.remove('active'));
+        // add active class to clicked button
+        filterButton.classList.add('active');
+        // update selected part
+        selectedPart = button.dataset.part;
+      }
+    });
+
+    updateChecklist();
+  });
 }
 
 function initDirection() {
@@ -1296,7 +1288,7 @@ function updateChecklist() {
                   item.status === 'completed'
                     ? `
                   <button class="action-button photo-button">
-                    <span class="material-icons">photo_camera</span>
+                    <span class="material-icons">camera</span>
                   </button>
                 `
                     : `
@@ -1411,7 +1403,7 @@ async function handleItemAction(itemId, action) {
               <video id="camera-video-element" autoplay playsinline></video>
               <div class="camera-controls">
                 <button id="capture-photo-button" class="capture-button">
-                  <span class="material-icons">photo_camera</span>
+                  <span class="material-icons">camera_alt</span>
                 </button>
                 <button id="cancel-photo-button" class="cancel-button">
                   <span class="material-icons">close</span>
@@ -1621,7 +1613,7 @@ function openIssueModal(item) {
           <video id="camera-video-element" autoplay playsinline></video>
           <div class="camera-controls">
             <button id="capture-photo-button" class="capture-button">
-              <span class="material-icons">photo_camera</span>
+              <span class="material-icons">camera_alt</span>
             </button>
             <button id="cancel-photo-button" class="cancel-button">
               <span class="material-icons">close</span>
@@ -2000,7 +1992,7 @@ async function openCamera() {
         <video id="camera-video-preview" autoplay playsinline></video>
         <div class="camera-controls">
           <button id="take-snapshot" class="camera-button">
-            <span class="material-icons">photo_camera</span>
+            <span class="material-icons">camera</span>
           </button>
           <button id="close-camera" class="camera-button">
             <span class="material-icons">close</span>

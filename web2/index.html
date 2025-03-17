@@ -56,13 +56,38 @@
         </div>
       </div>
 
-      <div class="filter-section">
-        <div class="vertical-filter-container">
-          <!-- Filter buttons sẽ được thêm vào đây -->
-        </div>
-
-        <div class="checklist-filters" id="detail-filters"></div>
+      <div class="part-filter-container">
+        <div class="part-filter-buttons" id="part-filters"></div>
       </div>
+
+      <!-- Detail Filter Container (with dropdown behavior) -->
+      <div class="detail-filter-dropdown" id="detail-filter-dropdown">
+        <div class="detail-filters" id="detail-filters">
+          <!-- Detail filter chips will be added here -->
+        </div>
+      </div>
+
+      <!-- Filter Section -->
+      <!-- <div class="filter-container">
+        <div class="filter-buttons">
+          <button class="filter-button active" data-filter="all">
+            <span class="material-icons">list</span>
+            <span>全て</span>
+          </button>
+          <button class="filter-button" data-filter="pending">
+            <span class="material-icons">pending</span>
+            <span>未確認</span>
+          </button>
+          <button class="filter-button" data-filter="completed">
+            <span class="material-icons">check_circle</span>
+            <span>完了</span>
+          </button>
+          <button class="filter-button" data-filter="issue">
+            <span class="material-icons">warning</span>
+            <span>問題あり</span>
+          </button>
+        </div>
+      </div> -->
 
       <!-- Blueprint Section -->
       <div class="blueprint-container">
@@ -85,7 +110,7 @@
         </div>
 
         <button class="camera-button" id="camera-button">
-          <span class="material-icons">photo_camera</span>
+          <span class="material-icons">camera</span>
           <span>すべてOK</span>
         </button>
       </div>
@@ -166,7 +191,7 @@
 
             <div class="photo-controls">
               <button class="take-picture-button" id="take-picture-button">
-                <span class="material-icons">photo_camera</span>
+                <span class="material-icons">camera</span>
                 <span>写真を撮る</span>
               </button>
             </div>
