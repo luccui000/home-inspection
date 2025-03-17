@@ -416,7 +416,11 @@ body {
 }
 
 .issue-button {
-  background-color: #ef4444;
+  background-color: #64748b;
+}
+
+.issue-button-check {
+  background-color: #ef4444; 
 }
 
 .action-button .material-icons {

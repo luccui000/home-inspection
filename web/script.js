@@ -1305,7 +1305,9 @@ function updateChecklist() {
                   </button>
                 `
                     : `
-                  <button class="action-button issue-button">
+                  <button class="action-button issue-button ${
+                    item.status === 'issue' ? 'issue-button-check' : ''
+                  }">
                     <span class="material-icons">close</span>
                   </button>
                 `
@@ -1844,6 +1846,7 @@ function updateChecklistItems() {
   // Lọc và hiển thị các mục checklist phù hợp với direction hiện tại
   renderChecklist();
 }
+
 function renderChecklist() {
   // Sử dụng lại code như trong hàm updateChecklist()
   const filtered = checklist.filter(
@@ -1927,7 +1930,9 @@ function renderChecklist() {
                   </button>
                 `
                     : `
-                  <button class="action-button issue-button">
+                  <button class="action-button issue-button ${
+                    item.status === 'issue' ? 'issue-button-check' : ''
+                  }">
                     <span class="material-icons">close</span>
                   </button>
                 `
