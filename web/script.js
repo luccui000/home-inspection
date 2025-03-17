@@ -320,7 +320,7 @@ function updateDetailFilters() {
           icon: 'circle',
         };
         return `
-        <button class="filter-chip" data-detail="${detail}">
+        <button class="filter-chip active" data-detail="${detail}">
           <span class="material-icons">${detailInfo.icon}</span>
           <span>${detailInfo.name}</span>
         </button>
@@ -334,10 +334,13 @@ function updateDetailFilters() {
   console.log('Detail filters HTML updated');
 
   // Reset selected details when updating filters
-  selectedDetails = [];
+  selectedDetails = details;
 
   // Setup detail filter click handlers
   setupDetailFilters();
+
+  // Update checklist with all details selected
+  updateChecklist();
 }
 
 // Get unique parts for current direction
