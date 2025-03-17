@@ -93,6 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
   addPhotoHistoryButton(); // Thêm nút lịch sử ảnh
   updateProgress();
 
+  setupPartFilters();
   updateChecklist();
 });
 
