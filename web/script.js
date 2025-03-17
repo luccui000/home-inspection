@@ -153,6 +153,7 @@ function setupPartFilters() {
 
   filterButtons.forEach((button) => {
     button.addEventListener('click', () => {
+      updateChecklist();
       // Toggle behavior
       filterButtons.forEach((b) => b.classList.remove('active'));
 
