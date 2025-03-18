@@ -117,6 +117,9 @@ body {
   font-weight: 500;
   color: var(--text-secondary);
 }
+.direction-button:first-child {
+  border-left: 1px solid var(--border-color);
+}
 
 .direction-button.active {
   border-bottom: 2px solid var(--primary-color);
