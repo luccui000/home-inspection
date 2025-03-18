@@ -958,20 +958,21 @@ function startDrag(e) {
   let iconHTML = '';
   switch (selectedShape.shape) {
     case 'circle':
-      iconHTML = `<div class="circle-shape" style="background-color: ${selectedShape.color}; width: 24px; height: 24px; border: 2px solid white;"></div>`;
+      iconHTML = `<div class="circle-shape" style="background-color: ${selectedShape.color}; width: 24px; height: 24px;"></div>`;
       break;
     case 'triangle':
       iconHTML = `
       <div class="triangle-container" style="width: 24px; height: 24px;">
-        <div class="triangle-shape" style="border-bottom-color: ${selectedShape.color}; border-bottom-width: 24px; border-left-width: 12px; border-right-width: 12px; border: 2px solid white;"></div>
+        <div class="triangle-shape" style="width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 24px solid ${selectedShape.color}; filter: drop-shadow(0 0 1px white);"></div>
       </div>`;
       break;
     case 'square':
-      iconHTML = `<div class="square-shape" style="background-color: ${selectedShape.color}; width: 24px; height: 24px; border: 2px solid white;"></div>`;
+      iconHTML = `<div class="square-shape" style="background-color: ${selectedShape.color}; width: 24px; height: 24px;"></div>`;
       break;
   }
 
   dragIcon.innerHTML = iconHTML;
+  console.log(dragIcon);
   document.body.appendChild(dragIcon);
 
   isDragging = true;
@@ -1980,6 +1981,15 @@ function setupCameraButton() {
   if (!cameraButton) return;
 
   cameraButton.addEventListener('click', async () => {
+    // add alert message 全て問題なしに設定しますか？\n 設定した後にいつか写真を撮ってください。before request camera
+    if (
+      !confirm(
+        '全て問題なしに設定しますか？\n 設定した後にいつか写真を撮ってください。'
+      )
+    ) {
+      return;
+    }
+
     try {
       // Kiểm tra xem thiết bị có hỗ trợ camera không
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {

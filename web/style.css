@@ -25,7 +25,7 @@ body {
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 600px;
   margin: 0 auto;
   padding: 0 5px;
 }
@@ -215,7 +215,7 @@ body {
   position: absolute;
   bottom: 5px;
   right: 5px;
-  background-color: #6366f1;
+  background-color: #2563eb;
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -412,7 +412,7 @@ body {
 }
 
 .photo-button {
-  background-color: #6366f1;
+  background-color: var(--primary-color);
 }
 
 .issue-button {
@@ -717,19 +717,32 @@ body {
 }
 
 .triangle-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 24px;
   height: 24px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 .triangle-shape {
   width: 0;
   height: 0;
-  border-style: solid;
-  border-width: 0 12px 20px 12px;
-  border-color: transparent transparent #ef4444 transparent;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-bottom: 24px solid currentColor;
+  position: relative;
+}
+
+/* For dragged triangle */
+.dragged-icon .triangle-shape {
+  filter: drop-shadow(0 0 1px white);
+}
+
+/* For pinned triangle */
+.pinned-icon .triangle-shape {
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 16px solid currentColor;
 }
 
 .shape-label {
@@ -1095,7 +1108,7 @@ body {
 .photo-history-button {
   position: absolute;
   bottom: 5px;
-  background-color: #6366f1;
+  background-color: var(--primary-color);
   color: white;
   border: none;
   border-radius: 8px;
@@ -1111,7 +1124,7 @@ body {
 
 .photo-count {
   background-color: white;
-  color: #6366f1;
+  color: var(--primary-color);
   border-radius: 50%;
   width: 18px;
   height: 18px;
