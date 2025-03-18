@@ -670,6 +670,7 @@ body {
 .shapes-toolbar {
   background-color: var(--white);
   border-bottom: 1px solid var(--border-color);
+  padding: 5px 0;
 }
 
 .shapes-container {
