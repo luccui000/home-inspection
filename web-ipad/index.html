@@ -14,87 +14,85 @@
     <div class="ipad-container">
       <!-- Left Panel -->
       <div class="left-panel">
-        <!-- Progress Section -->
-        <div class="progress-container">
-          <div class="progress-info">
-            <span class="progress-text">進捗状況: </span>
-            <span class="progress-count">
-              <span id="completed-items">0</span>/<span id="total-items"
-                >0</span
-              >
-            </span>
-          </div>
-          <div class="progress-bar-container">
-            <div class="progress-bar-background">
-              <div class="progress-bar" id="progress-bar"></div>
-            </div>
-            <span class="progress-percentage" id="progress-percentage">0%</span>
-          </div>
-        </div>
-
         <!-- Checklist Section -->
         <div class="checklist-container">
-          <h2 class="section-title">点検項目</h2>
+          <div class="checklist-header">
+            <h2 class="section-title">点検項目</h2>
+            <!-- Progress Section -->
+            <div class="progress-container">
+              <div class="progress-info">
+                <span class="progress-text">進捗状況: </span>
+                <span class="progress-count">
+                  <span id="completed-items">0</span>/<span id="total-items">0</span>
+                </span>
+              </div>
+              <div class="progress-bar-container">
+                <div class="progress-bar-background">
+                  <div class="progress-bar" id="progress-bar"></div>
+                </div>
+                <span class="progress-percentage" id="progress-percentage">0%</span>
+              </div>
+            </div>
+          </div>
           <div class="checklist-filters" id="detail-filters"></div>
+          <div class="checklist" id="checklist"></div>
         </div>
       </div>
 
       <!-- Right Panel -->
       <div class="right-panel">
-        <!-- Direction Selector -->
-        <div class="direction-container">
-          <div class="direction-buttons">
-            <button class="direction-button" data-direction="north">
-              <span class="material-icons">arrow_upward</span>
-              <span>前面</span>
-            </button>
-            <button class="direction-button" data-direction="east">
-              <span class="material-icons">arrow_forward</span>
-              <span>右側</span>
-            </button>
-            <button class="direction-button" data-direction="south">
-              <span class="material-icons">arrow_downward</span>
-              <span>後面</span>
-            </button>
-            <button class="direction-button" data-direction="west">
-              <span class="material-icons">arrow_back</span>
-              <span>左側</span>
-            </button>
-          </div>
-        </div>
-
         <!-- Blueprint Section -->
         <div class="blueprint-container">
-          <div class="zoom-controls">
-            <button class="zoom-button" id="zoom-in">
-              <span class="material-icons">add_circle</span>
-            </button>
-            <button class="zoom-button" id="zoom-out">
-              <span class="material-icons">remove_circle</span>
-            </button>
+          <div class="blueprint-header">
+            <!-- Direction Selector -->
+            <div class="direction-container">
+              <div class="direction-buttons">
+                <button class="direction-button" data-direction="north">
+                  <span class="material-icons">arrow_upward</span>
+                  <span>前面</span>
+                </button>
+                <button class="direction-button" data-direction="east">
+                  <span class="material-icons">arrow_forward</span>
+                  <span>右側</span>
+                </button>
+                <button class="direction-button" data-direction="south">
+                  <span class="material-icons">arrow_downward</span>
+                  <span>後面</span>
+                </button>
+                <button class="direction-button" data-direction="west">
+                  <span class="material-icons">arrow_back</span>
+                  <span>左側</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Zoom Controls -->
+            <div class="zoom-controls">
+              <button class="zoom-button" id="zoom-in">
+                <span class="material-icons">add_circle</span>
+              </button>
+              <button class="zoom-button" id="zoom-out">
+                <span class="material-icons">remove_circle</span>
+              </button>
+            </div>
           </div>
 
           <div class="blueprint-image-container">
-            <img
-              id="blueprint-image"
-              src=""
-              alt="Blueprint"
-              class="blueprint"
-            />
+            <img id="blueprint-image" src="" alt="Blueprint" class="blueprint" />
             <div class="pinned-icons-container"></div>
+          </div>
+
+          <!-- Shapes Toolbar -->
+          <div class="shapes-toolbar">
+            <div class="shapes-container">
+              <!-- Shape buttons will be populated by script -->
+            </div>
           </div>
 
           <button class="camera-button" id="camera-button">
             <span class="material-icons">photo_camera</span>
             <span>すべて問題なし</span>
           </button>
-        </div>
-
-        <!-- Shapes Toolbar -->
-        <div class="shapes-toolbar">
-          <div class="shapes-container">
-            <!-- Shape buttons will be populated by script -->
-          </div>
         </div>
       </div>
     </div>
