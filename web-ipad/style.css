@@ -1,0 +1,129 @@
+:root {
+  --primary-color: #2563eb;
+  --secondary-color: #f1f5f9;
+  --text-color: #1e293b;
+  --background-color: #f8fafc;
+  --border-color: #e2e8f0;
+  --success-color: #10b981;
+  --error-color: #ef4444;
+  --white: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  height: 100vh;
+  overflow: hidden;
+}
+
+.ipad-container {
+  display: flex;
+  height: 100vh;
+  padding: 16px;
+  gap: 16px;
+}
+
+.left-panel {
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.right-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Progress Section */
+.progress-container {
+  padding: 12px 16px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Checklist Section */
+.checklist-container {
+  flex: 1;
+  background-color: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  overflow-y: auto;
+}
+
+/* Blueprint Section */
+.blueprint-container {
+  flex: 1;
+  position: relative;
+  background-color: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Other styles from web/style.css can be reused */
+/* ... */
+
+/* Adjustments for iPad screen size */
+.checklist-item {
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.checklist-text {
+  font-size: 16px;
+}
+
+.blueprint-image-container {
+  height: 100%;
+}
+
+.zoom-controls {
+  top: 16px;
+  right: 16px;
+}
+
+.camera-button {
+  bottom: 16px;
+  right: 16px;
+  padding: 12px 24px;
+  font-size: 16px;
+}
+
+.shapes-toolbar {
+  padding: 12px;
+}
+
+.shape-button {
+  padding: 12px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .ipad-container {
+    flex-direction: column;
+  }
+  
+  .left-panel {
+    width: 100%;
+    height: 40%;
+  }
+  
+  .right-panel {
+    height: 60%;
+  }
+}
