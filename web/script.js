@@ -1841,16 +1841,41 @@ function openPhotoGallery(photos, startIndex = 0) {
 }
 
 function updateProgress() {
-  const completed = checklist.filter(
+  // Calculate total items
+  const totalItems = checklist.length;
+
+  const completedItems = checklist.filter(
     (item) => item.status === 'completed' || item.status === 'issue'
   ).length;
-  const total = checklist.length;
-  const percentage = Math.round((completed / total) * 100);
 
-  completedItemsEl.textContent = completed;
-  totalItemsEl.textContent = total;
-  progressPercentageEl.textContent = `${percentage}%`;
-  progressBar.style.width = `${percentage}%`;
+  // Calculate completed items (status === 'completed')
+  const countCompletedItems = checklist.filter(
+    (item) => item.status === 'completed'
+  ).length;
+
+  // Calculate issue items (status === 'issue' or has photos)
+  const issueItems = checklist.filter((item) => {
+    return item.status === 'issue' || (item.photos && item.photos.length > 0);
+  }).length;
+
+  // Update total count
+  document.getElementById('total-items').textContent = totalItems;
+
+  // Update completed items count
+  document.getElementById('completed-items').textContent = completedItems;
+  document.getElementById('count-completed-items').textContent =
+    countCompletedItems;
+
+  // Update issue items count
+  document.getElementById('count-issue-items').textContent = issueItems;
+
+  // Calculate and update progress percentage
+  const totalChecked = completedItems + issueItems;
+  const percentage = Math.round((totalChecked / totalItems) * 100);
+
+  // Update progress bar and percentage text
+  document.getElementById('progress-percentage').textContent = `${percentage}%`;
+  document.getElementById('progress-bar').style.width = `${percentage}%`;
 }
 
 function updateDirectionButtons() {

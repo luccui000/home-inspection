@@ -37,7 +37,7 @@ body {
 
 /* Progress Section */
 .progress-container {
-  padding: 6px 16px;
+  padding: 2px 0;
   background-color: white;
   border-bottom: 1px solid #e5e7eb;
   display: flex;
@@ -62,7 +62,7 @@ body {
 
 .progress-bar-container {
   flex: 1;
-  max-width: 200px;
+  max-width: 400px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -92,6 +92,34 @@ body {
   text-align: right;
 }
 
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 16px;
+  background: var(--secondary-color);
+}
+
+.stat-item.completed {
+  color: var(--success-color);
+}
+
+.stat-item.issues {
+  color: var(--error-color);
+}
+
+.stat-item .material-icons {
+  font-size: 16px;
+}
+
+.stat-count {
+  font-size: 13px;
+  font-weight: 600;
+  min-width: 20px;
+  text-align: center;
+}
+
 /* Direction Selector */
 .direction-container {
   border-bottom: 1px solid var(--border-color);
@@ -113,6 +141,7 @@ body {
   cursor: pointer;
   border-bottom: 2px;
   border-right: 1px solid var(--border-color);
+  
   font-size: 12px;
   font-weight: 500;
   color: var(--text-secondary);
