@@ -1,7 +1,10 @@
 :root {
+  /* Update color palette */
   --primary-color: #2563eb;
   --secondary-color: #f1f5f9;
-  --text-color: #1e293b;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-tertiary: #94a3b8;
   --background-color: #f8fafc;
   --border-color: #e2e8f0;
   --success-color: #10b981;
@@ -19,9 +22,11 @@
 }
 
 body {
-  font-family: Arial, sans-serif;
-  background-color: var(--background-color);
-  color: var(--text-color);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
 }
 
 .container {
@@ -46,13 +51,13 @@ body {
   align-items: center;
   gap: 4px;
   white-space: nowrap;
-  color: #64748b;
-  font-size: 14px;
+  font-size: 13px;
+  color: var(--text-secondary);
 }
 
 .progress-count {
-  font-weight: 500;
-  color: #334155;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 .progress-bar-container {
@@ -80,9 +85,9 @@ body {
 }
 
 .progress-percentage {
-  font-size: 14px;
-  font-weight: 500;
-  color: #2563eb;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary-color);
   min-width: 42px;
   text-align: right;
 }
@@ -108,10 +113,14 @@ body {
   cursor: pointer;
   border-bottom: 2px;
   border-right: 1px solid var(--border-color);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
 }
 
 .direction-button.active {
   border-bottom: 2px solid var(--primary-color);
+  color: var(--primary-color);
 }
 
 .direction-button span {
@@ -135,23 +144,6 @@ body {
   z-index: 10;
   padding: 8px;
   border-radius: 12px;
-}
-
-.vertical-filter-container .filter-button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border: none;
-  color: #64748b;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.vertical-filter-container .filter-button.active {
-  background-color: #2563eb;
-  color: white;
 }
 
 .vertical-filter-container .filter-button:not(.active):hover {
@@ -234,10 +226,10 @@ body {
 }
 
 .section-title {
-  font-size: 20px;
-  font-weight: 600;
   margin: 8px 0;
-  color: #334155;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 .checklist-filters {
@@ -261,7 +253,8 @@ body {
   border-radius: 16px;
   background-color: white;
   color: #64748b;
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -306,10 +299,12 @@ body {
 }
 
 .checklist-subtitle {
-  font-size: 10px;
-  font-weight: 600;
-  color: #64748b;
   flex: 1;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .completion-count-container {
@@ -350,8 +345,9 @@ body {
 
 .checklist-text {
   flex: 1;
-  font-size: 14px;
-  color: #334155;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-primary);
 }
  
 
@@ -493,9 +489,16 @@ body {
 }
 
 .modal-title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   margin: 0;
+}
+
+.modal-item-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.4;
 }
 
 .close-modal {
@@ -521,10 +524,10 @@ body {
 
 .note-label {
   display: block;
-  font-size: 14px;
-  color: var(--text-color);
   margin-bottom: 8px;
+  font-size: 13px;
   font-weight: 500;
+  color: var(--text-secondary);
 }
 
 .note-input {
@@ -533,8 +536,10 @@ body {
   padding: 12px;
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  font-size: 14px;
   resize: vertical;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-primary);
 }
 
 .note-input:focus {
@@ -550,10 +555,10 @@ body {
   border: none;
   border-radius: 8px;
   padding: 12px;
-  font-size: 16px;
-  font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .save-button:hover {
@@ -587,8 +592,9 @@ body {
   align-items: center;
   gap: 4px;
   cursor: pointer;
-  font-size: 14px;
   transition: background-color 0.2s ease;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .take-picture-button:hover {
@@ -604,10 +610,10 @@ body {
 }
 
 .photo-list-title {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-color);
   margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
 }
 
 .photo-list {
@@ -1042,10 +1048,11 @@ body {
   color: white;
   padding: 8px 16px;
   border-radius: 20px;
-  font-size: 14px;
   opacity: 0;
   transition: opacity 0.2s ease;
   z-index: 100;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 /* Thêm vào file style.css */
@@ -1097,7 +1104,8 @@ body {
   border-radius: 20px;
   z-index: 1000;
   transition: transform 0.3s ease;
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .toast.show {
@@ -1131,8 +1139,8 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 12px;
-  font-weight: bold;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 /* Camera modal */
@@ -1555,9 +1563,9 @@ body {
   left: 0;
   right: 0;
   background-color: rgba(0, 0, 0, 0.5);
-  color: white;
-  font-size: 10px;
   padding: 4px 8px;
+  font-size: 11px;
+  color: var(--text-tertiary);
 }
 
 .gallery-footer {
@@ -1692,6 +1700,9 @@ body {
   background-color: white;
   cursor: pointer;
   transition: all 0.2s ease;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
 }
 
 .filter-button .dropdown-icon {
@@ -1701,7 +1712,7 @@ body {
 
 .filter-button.active {
   background-color: #2563eb;
-  color: white;
+  color: var(--white);
 }
 
 #detail-filters {
