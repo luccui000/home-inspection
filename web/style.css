@@ -322,8 +322,8 @@ body {
 .checklist-item {
   background-color: white;
   border-radius: 5px;
-  padding: 12px;
-  margin-bottom: 8px;
+  padding: 6px;
+  margin-bottom: 2px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -677,7 +677,6 @@ body {
   justify-content: center;
   gap: 10px;
   overflow-x: auto;
-  padding: 8px 0;
 }
 
 .shape-button {

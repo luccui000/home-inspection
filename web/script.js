@@ -533,6 +533,9 @@ function setupShapeButtons() {
 
 function setupShapeButtonEvents() {
   const shapeButtons = document.querySelectorAll('.shape-button');
+  const blueprintImageContainer = document.querySelector(
+    '.blueprint-image-container'
+  );
 
   shapeButtons.forEach((button) => {
     // Xử lý mousedown cho desktop
@@ -548,25 +551,34 @@ function setupShapeButtonEvents() {
       button.classList.add('drag-active');
 
       // Sau một khoảng thời gian, nếu vẫn giữ chuột, bắt đầu kéo
+      // Set timer cho long press
       longPressTimer = setTimeout(() => {
         isDragStarted = true;
         button.classList.add('dragging');
-        const blueprintHelpText = document.getElementById(
-          'blueprint-help-text'
-        );
-        if (blueprintHelpText) {
-          blueprintHelpText.style.opacity = '1';
-          blueprintHelpText.textContent = 'ここにドラッグしてマークを配置';
-        }
-
         startDrag(e);
-        const blueprintImageContainer = document.querySelector(
-          '.blueprint-image-container'
-        );
-        if (blueprintImageContainer) {
-          blueprintImageContainer.classList.add('dropzone-active');
-        }
       }, 300);
+    });
+
+    button.addEventListener('mouseup', (e) => {
+      clearTimeout(longPressTimer);
+      button.classList.remove('drag-active');
+
+      // Kiểm tra vị trí thả
+      if (isDragging) {
+        const rect = blueprintImageContainer.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        // Chỉ xử lý endDrag khi thả trong blueprint
+        if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
+          endDrag(e);
+        } else {
+          // Hủy drag nếu thả ngoài blueprint
+          cancelDrag();
+        }
+      }
+
+      isDragStarted = false;
     });
 
     // Xử lý touchstart cho thiết bị di động
@@ -585,21 +597,7 @@ function setupShapeButtonEvents() {
         longPressTimer = setTimeout(() => {
           isDragStarted = true;
           button.classList.add('dragging');
-          const blueprintHelpText = document.getElementById(
-            'blueprint-help-text'
-          );
-          if (blueprintHelpText) {
-            blueprintHelpText.style.opacity = '1';
-            blueprintHelpText.textContent = 'ここにドラッグしてマークを配置';
-          }
-
           startDrag(e);
-          const blueprintImageContainer = document.querySelector(
-            '.blueprint-image-container'
-          );
-          if (blueprintImageContainer) {
-            blueprintImageContainer.classList.add('dropzone-active');
-          }
         }, 300);
       },
       { passive: false }
@@ -619,12 +617,23 @@ function setupShapeButtonEvents() {
     button.addEventListener(
       'touchend',
       (e) => {
-        e.preventDefault();
         clearTimeout(longPressTimer);
         button.classList.remove('drag-active');
-        if (!isDragStarted) {
-          selectShape(button.dataset.shape, button.dataset.color);
+
+        // Kiểm tra vị trí thả cho touch event
+        if (isDragging) {
+          const touch = e.changedTouches[0];
+          const rect = blueprintImageContainer.getBoundingClientRect();
+          const x = touch.clientX - rect.left;
+          const y = touch.clientY - rect.top;
+
+          if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
+            endDrag(e);
+          } else {
+            cancelDrag();
+          }
         }
+
         isDragStarted = false;
       },
       { passive: false }
@@ -648,6 +657,30 @@ function setupShapeButtonEvents() {
       return false;
     });
   });
+}
+
+// Add cancelDrag function
+function cancelDrag() {
+  isDragging = false;
+  if (dragIcon) {
+    dragIcon.remove();
+    dragIcon = null;
+  }
+
+  // Reset UI states
+  const blueprintImageContainer = document.querySelector(
+    '.blueprint-image-container'
+  );
+  const blueprintHelpText = document.getElementById('blueprint-help-text');
+
+  if (blueprintImageContainer) {
+    blueprintImageContainer.classList.remove('dropzone-active');
+    blueprintImageContainer.classList.remove('drop-highlight');
+  }
+
+  if (blueprintHelpText) {
+    blueprintHelpText.style.opacity = '0';
+  }
 }
 
 function setupBlueprintInteractions() {
@@ -972,7 +1005,6 @@ function startDrag(e) {
   }
 
   dragIcon.innerHTML = iconHTML;
-  console.log(dragIcon);
   document.body.appendChild(dragIcon);
 
   isDragging = true;
@@ -1034,6 +1066,7 @@ function handleDrag(e) {
 }
 
 function endDrag(e) {
+  console.log('endDrag called');
   if (!isDragging) return;
 
   isDragging = false;
