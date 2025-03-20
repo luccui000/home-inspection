@@ -28,7 +28,7 @@ html, body {
   max-width: 1024px;
   display: grid;
   grid-template-columns: 1fr 320px;
-  height: 100vh;
+  height: calc(100vh - 20px);
   padding: 16px;
   background-color: var(--secondary-color);
   gap: 12px;

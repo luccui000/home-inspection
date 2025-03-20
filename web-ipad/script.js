@@ -824,9 +824,6 @@ function createCameraModal(stream, itemId) {
 function setupShapeButtonEvents() {
   const shapeButtons = document.querySelectorAll('.shape-button');
   const shapeTools = document.querySelector('.shape-tools');
-  const blueprint = document.querySelector('.blueprint-image-container');
-
-  let isDragging = false;
 
   shapeButtons.forEach((button) => {
     // Add mouse/touch events for dragging
