@@ -18,18 +18,115 @@
     <div class="ipad-container">
       <!-- Left Panel -->
       <div class="left-panel">
+        <!-- Direction Navigation -->
+        <div class="direction-nav">
+          <button class="direction-button" data-direction="north">
+            <span class="material-icons">arrow_upward</span>
+            <span>前面</span>
+          </button>
+          <button class="direction-button" data-direction="east">
+            <span class="material-icons">arrow_forward</span>
+            <span>右側</span>
+          </button>
+          <button class="direction-button" data-direction="south">
+            <span class="material-icons">arrow_downward</span>
+            <span>後面</span>
+          </button>
+          <button class="direction-button" data-direction="west">
+            <span class="material-icons">arrow_back</span>
+            <span>左側</span>
+          </button>
+        </div>
+
+        <!-- Add this after the direction-nav div -->
+        <div class="filter-nav"></div>
+
+        <div class="filter-dropdown" id="filter-dropdown">
+          <div class="filter-chips-container"></div>
+        </div>
+
+        <!-- Blueprint View -->
+        <div class="blueprint-container">
+          <div class="zoom-controls">
+            <button id="zoom-in" class="zoom-button">
+              <span class="material-icons">add</span>
+            </button>
+            <button id="zoom-out" class="zoom-button">
+              <span class="material-icons">remove</span>
+            </button>
+          </div>
+
+          <div class="blueprint-image-container">
+            <img
+              id="blueprint-image"
+              class="blueprint"
+              src="./assets/images/north-blueprint.jpg"
+              alt="設計図"
+            />
+            <div class="pinned-icons-container"></div>
+          </div>
+
+          <!-- Shape Tools -->
+          <div class="shape-tools">
+            <div class="shapes-container">
+              <button
+                class="shape-button"
+                data-shape="circle"
+                data-color="#ef4444"
+              >
+                <div class="circle-shape"></div>
+              </button>
+              <button
+                class="shape-button"
+                data-shape="triangle"
+                data-color="#3b82f6"
+              >
+                <div class="triangle-shape"></div>
+              </button>
+              <button
+                class="shape-button"
+                data-shape="square"
+                data-color="#3b82f6"
+              >
+                <div class="square-shape"></div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Camera Button -->
+        <button class="camera-button" id="camera-button">
+          <span class="material-icons">photo_camera</span>
+          <span>写真を撮る</span>
+        </button>
+      </div>
+
+      <!-- Right Panel -->
+      <div class="right-panel">
         <!-- Progress Bar -->
         <div class="progress-section">
           <div class="progress-info">
-            <span>進捗状況</span>
-            <div class="progress-numbers">
-              <span id="completed-items">0</span>/<span id="total-items"
-                >0</span
-              >
-              <span class="progress-percentage" id="progress-percentage"
-                >0%</span
+            <div>
+              <span
+                >進捗状況: <span id="completed-items">0</span>/<span
+                  id="total-items"
+                  >0</span
+                ></span
               >
             </div>
+            <div class="progress-status">
+              <div class="progress-icon-container">
+                <span class="material-icons progress-icon-check"
+                  >check_circle</span
+                >
+                <span id="completed-count">0</span>
+              </div>
+              <div class="progress-icon-container">
+                <span class="material-icons progress-icon-close">cancel</span>
+                <span id="issue-count">0</span>
+              </div>
+            </div>
+            <span class="progress-percentage" id="progress-percentage">0%</span>
           </div>
           <div class="progress-bar-container">
             <div class="progress-bar" id="progress-bar"></div>
@@ -202,83 +299,6 @@
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- Right Panel -->
-      <div class="right-panel">
-        <!-- Direction Navigation -->
-        <div class="direction-nav">
-          <button class="direction-button" data-direction="north">
-            <span class="material-icons">arrow_upward</span>
-            <span>前面</span>
-          </button>
-          <button class="direction-button" data-direction="east">
-            <span class="material-icons">arrow_forward</span>
-            <span>右側</span>
-          </button>
-          <button class="direction-button" data-direction="south">
-            <span class="material-icons">arrow_downward</span>
-            <span>後面</span>
-          </button>
-          <button class="direction-button" data-direction="west">
-            <span class="material-icons">arrow_back</span>
-            <span>左側</span>
-          </button>
-        </div>
-        <!-- Blueprint View -->
-        <div class="blueprint-container">
-          <div class="zoom-controls">
-            <button id="zoom-in" class="zoom-button">
-              <span class="material-icons">add</span>
-            </button>
-            <button id="zoom-out" class="zoom-button">
-              <span class="material-icons">remove</span>
-            </button>
-          </div>
-
-          <div class="blueprint-image-container">
-            <img
-              id="blueprint-image"
-              class="blueprint"
-              src="./assets/images/north-blueprint.jpg"
-              alt="設計図"
-            />
-            <div class="pinned-icons-container"></div>
-          </div>
-
-          <!-- Shape Tools -->
-          <div class="shape-tools">
-            <div class="shapes-container">
-              <button
-                class="shape-button"
-                data-shape="circle"
-                data-color="#ef4444"
-              >
-                <div class="circle-shape"></div>
-              </button>
-              <button
-                class="shape-button"
-                data-shape="triangle"
-                data-color="#f97316"
-              >
-                <div class="triangle-shape"></div>
-              </button>
-              <button
-                class="shape-button"
-                data-shape="square"
-                data-color="#84cc16"
-              >
-                <div class="square-shape"></div>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Camera Button -->
-        <button class="camera-button" id="camera-button">
-          <span class="material-icons">photo_camera</span>
-          <span>写真を撮る</span>
-        </button>
       </div>
     </div>
 
