@@ -18,16 +18,22 @@ html, body {
   overflow: hidden;
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
 }
 
 /* iPad Container */
 .ipad-container {
+  max-width: 1024px;
   display: grid;
-  grid-template-columns: 1fr 200px;
+  grid-template-columns: 1fr 320px;
   height: 100vh;
-  gap: 16px;
   padding: 16px;
   background-color: var(--secondary-color);
+  gap: 12px;
+  position: relative;
+  padding: 10px;
 }
 
 /* Left Panel */
@@ -209,6 +215,33 @@ html, body {
 .checklist {
   height: 100%;
   overflow-y: auto;
+  padding-right: 8px; /* Add padding for content */
+  margin-right: -8px; /* Offset the padding to maintain layout */
+}
+
+/* Improve Scrollbar Styles */
+.checklist::-webkit-scrollbar {
+  width: 6px;
+  background-color: transparent;
+}
+
+.checklist::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 4px 0; /* Add some margin to top and bottom */
+  border-radius: 3px;
+}
+
+.checklist::-webkit-scrollbar-thumb {
+  background-color: var(--primary-color);
+  border-radius: 3px;
+  min-height: 40px; /* Minimum height for thumb */
+  border: 2px solid transparent; /* Create padding effect */
+  background-clip: padding-box;
+}
+
+/* Add hover effect for scrollbar */
+.checklist:hover::-webkit-scrollbar-thumb {
+  background-color: var(--primary-color);
 }
 
 /* Right Panel */
@@ -614,7 +647,8 @@ html, body {
   margin-top: 10px;
   background-color: var(--white);
   border-radius: 12px;
-  padding: 6px 10px;
+  padding: 6px 16px 6px 10px; /* Increased right padding */
+  overflow: hidden; /* Prevent scrollbar from causing container overflow */
 }
 
 /* Scrollbar Styles */
