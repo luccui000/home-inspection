@@ -81,18 +81,18 @@ function getShapeStyle(detail) {
 
 function getPartIcon(part) {
   const icons = {
-    wall: 'format_paint',
-    window: 'window',
-    drain: 'water_drop',
+    walls: 'format_paint',
+    roof: 'window',
+    foundation: 'water_drop',
   };
   return icons[part] || 'circle';
 }
 
 function getPartName(part) {
   const names = {
-    wall: '外壁',
-    window: '窓',
-    drain: '排水',
+    walls: '外壁',
+    roof: '窓',
+    foundation: '排水',
   };
   return names[part] || part;
 }
@@ -590,8 +590,9 @@ function setupFilterButtons() {
 
     // Position dropdown next to active button
     const buttonRect = button.getBoundingClientRect();
+    console.log(buttonRect);
     filterDropdown.style.top = `${buttonRect.top}px`;
-    filterDropdown.style.left = `${buttonRect.right + 8}px`;
+    filterDropdown.style.left = `${buttonRect.width + 40}px`;
 
     // Add chip click handlers
     setupFilterChips();
