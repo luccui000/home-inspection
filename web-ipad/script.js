@@ -20,26 +20,12 @@ const state = {
 };
 
 // Direction mapping
-const DIRECTIONS = [
-  { id: 'north', name: '北', icon: 'arrow_upward' },
-  { id: 'east', name: '東', icon: 'arrow_forward' },
-  { id: 'south', name: '南', icon: 'arrow_downward' },
-  { id: 'west', name: '西', icon: 'arrow_back' },
-];
-
-const HOUSE_PARTS = [
-  { id: 'roof', name: '屋根', icon: 'roofing' },
-  { id: 'walls', name: '壁', icon: 'wall' },
-  { id: 'foundation', name: '基礎', icon: 'foundation' },
-];
-
-const DETAIL_TYPES = [
-  { id: 'paint', name: '塗装', icon: 'format_paint' },
-  { id: 'material', name: '材料', icon: 'construction' },
-  { id: 'structure', name: '構造', icon: 'architecture' },
-  { id: 'window', name: '窓', icon: 'window' },
-  { id: 'door', name: 'ドア', icon: 'door_front' },
-];
+const DIRECTIONS = {
+  north: { icon: 'arrow_upward', text: '前面' },
+  east: { icon: 'arrow_forward', text: '右側' },
+  south: { icon: 'arrow_downward', text: '後面' },
+  west: { icon: 'arrow_back', text: '左側' },
+};
 
 document.addEventListener('DOMContentLoaded', () => {
   // Make sure we clear any previous filters
@@ -102,15 +88,6 @@ function getShapeStyle(item) {
       return `background-color: ${color};
               border-radius: 50%;`;
   }
-}
-
-function getPartIcon(part) {
-  const icons = {
-    walls: 'format_paint',
-    roof: 'window',
-    foundation: 'water_drop',
-  };
-  return icons[part] || 'circle';
 }
 
 function getPartName(part) {
@@ -305,6 +282,9 @@ function setupDirectionNav() {
 
       // Update pinned icons visibility
       updateBlueprintIcons();
+
+      // Update visibility
+      updateBulkPhotoHistoryButtonVisibility();
 
       // Update checklist items
       updateChecklist();
@@ -716,12 +696,12 @@ function getItemIconConfig(part, detail) {
     }
   );
 }
-// Add this after the setupFilterButtons function
+// Update the getFilterChips function to use consistent icons
 function getFilterChips(filter) {
-  // Define filter options for each category
+  // Define filter options for each category with consistent icons
   const filterOptions = {
     wall: [
-      { id: 'crack', icon: 'format_paint', name: 'ひび割れ' },
+      { id: 'crack', icon: 'architecture', name: 'ひび割れ' },
       { id: 'paint', icon: 'format_paint', name: '塗装剥がれ' },
       { id: 'stain', icon: 'opacity', name: '汚れ' },
     ],
@@ -737,7 +717,13 @@ function getFilterChips(filter) {
     ],
   };
 
-  const options = filterOptions[filter] || [];
+  // Add "All" option at the beginning
+  let options = [];
+
+  // Add specific options for this filter type
+  if (filterOptions[filter]) {
+    options = options.concat(filterOptions[filter]);
+  }
 
   return options
     .map(
@@ -749,6 +735,28 @@ function getFilterChips(filter) {
   `
     )
     .join('');
+}
+
+// Update getPartIcon function to use consistent icons with filters
+function getPartIcon(part) {
+  const icons = {
+    walls: 'format_paint', // Consistent with wall filter
+    roof: 'roofing', // Updated to a more appropriate icon
+    foundation: 'water_drop', // Consistent with drain filter
+  };
+  return icons[part] || 'circle';
+}
+
+// Add a mapping function for detail icons to be consistent
+function getDetailIcon(detail) {
+  const icons = {
+    structure: 'architecture',
+    paint: 'format_paint',
+    material: 'opacity',
+    window: 'window',
+    door: 'door_front',
+  };
+  return icons[detail] || 'circle';
 }
 
 function setupFilterChips() {
@@ -1018,23 +1026,60 @@ function updateChecklist(filteredItems = null) {
 }
 
 // Helper function to render checklist group
+// Update renderChecklistGroup to include detail icons
 function renderChecklistGroup(part, items) {
-  return `
-    <div class="checklist-group">
-      <div class="checklist-subtitle-container">
-        <span class="material-icons">${getPartIcon(part)}</span>
-        <span class="checklist-subtitle">${getPartName(part)}</span>
-        <div class="completion-count-container">
-          <span class="completion-count">
-            ${items.filter((item) => item.status === 'completed').length}/${
-    items.length
-  }
-          </span>
+  // Group by detail type
+  const groupedByDetail = {};
+
+  items.forEach((item) => {
+    if (!groupedByDetail[item.detail]) {
+      groupedByDetail[item.detail] = [];
+    }
+    groupedByDetail[item.detail].push(item);
+  });
+
+  // Create part header
+  let html = '';
+
+  // Add each detail group
+  Object.entries(groupedByDetail).forEach(([detail, detailItems]) => {
+    if (detailItems.length > 0) {
+      // Count completed or issue items in this detail group
+      const completedCount = detailItems.filter(
+        (item) => item.status === 'completed' || item.status === 'issue'
+      ).length;
+
+      html += `
+        <div class="detail-group">
+          <div class="detail-header">
+            <div class="detail-title">
+              <span class="material-icons">${getDetailIcon(detail)}</span>
+              <span class="detail-name">${getDetailName(detail)}</span>
+            </div>
+            <span class="detail-count">${completedCount}/${
+        detailItems.length
+      }</span>
+          </div>
+          ${detailItems.map((item) => renderChecklistItem(item)).join('')}
         </div>
-      </div>
-      ${items.map((item) => renderChecklistItem(item)).join('')}
-    </div>
-  `;
+      `;
+    }
+  });
+
+  html += `</div>`;
+  return html;
+}
+
+// Add this helper function to get detail names
+function getDetailName(detail) {
+  const names = {
+    structure: '構造',
+    paint: '塗装',
+    material: '素材',
+    window: '窓',
+    door: 'ドア',
+  };
+  return names[detail] || detail;
 }
 
 // Helper function to render checklist item
@@ -2232,22 +2277,394 @@ function setupCameraButtonEvent() {
   const cameraButton = document.getElementById('check-all-camera');
 
   cameraButton.addEventListener('click', () => {
-    // Check if camera access is available
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      showCameraError();
-      return;
-    }
-    navigator.mediaDevices
-      .getUserMedia({
-        video: {
-          facingMode: 'environment', // Use back camera
-        },
-      })
-      .then((stream) => {
-        const modal = createCameraModal(stream);
-        document.body.appendChild(modal);
-      });
+    // Show confirmation dialog before proceeding
+    const confirmModal = document.createElement('div');
+    confirmModal.className = 'modal camera-confirm-modal';
+    confirmModal.innerHTML = `
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>一括確認</h3>
+          <button class="close-modal-button">
+            <span class="material-icons">close</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>全て問題なしに設定しますか？</p>
+          <p>設定した後にいつか写真を撮ってください。</p>
+        </div>
+        <div class="modal-actions">
+          <button class="cancel-button">キャンセル</button>
+          <button class="confirm-button">確認する</button>
+        </div>
+      </div>
+    `;
+
+    // Handle cancel
+    const cancelButton = confirmModal.querySelector('.cancel-button');
+    const closeButton = confirmModal.querySelector('.close-modal-button');
+
+    cancelButton.onclick = () => confirmModal.remove();
+    closeButton.onclick = () => confirmModal.remove();
+
+    // Handle confirm
+    confirmModal.querySelector('.confirm-button').onclick = () => {
+      confirmModal.remove();
+
+      // Only proceed with camera access after confirmation
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        showCameraError('このブラウザはカメラをサポートしていません。');
+        return;
+      }
+
+      // Show loading spinner
+      const loadingModal = document.createElement('div');
+      loadingModal.className = 'modal loading-modal';
+      loadingModal.innerHTML = `
+        <div class="modal-content" style="background: rgba(255,255,255,0.9); padding: 20px; border-radius: 8px; text-align: center;">
+          <div style="margin-bottom: 15px;">
+            <div class="spinner" style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+          </div>
+          <p>カメラにアクセスしています...</p>
+        </div>
+      `;
+      document.body.appendChild(loadingModal);
+      loadingModal.style.display = 'flex';
+
+      // Request camera access
+      navigator.mediaDevices
+        .getUserMedia({
+          video: {
+            facingMode: 'environment',
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
+        })
+        .then((stream) => {
+          loadingModal.remove();
+          // Use our separate function for check-all camera
+          createCameraCheckAll(stream);
+        })
+        .catch((err) => {
+          loadingModal.remove();
+          showCameraError('カメラのアクセスエラー: ' + err.message);
+        });
+    };
+
+    document.body.appendChild(confirmModal);
+    confirmModal.style.display = 'flex';
   });
+}
+
+function createCameraCheckAll(stream) {
+  // Create the overlay container
+  const overlay = document.createElement('div');
+  overlay.className = 'camera-overlay check-all-mode';
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    z-index: 9999999;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  `;
+
+  // Create camera container and elements
+  const cameraViewContainer = document.createElement('div');
+  cameraViewContainer.className = 'camera-view-container';
+  cameraViewContainer.style.cssText = `
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  `;
+
+  // Create the video element
+  const video = document.createElement('video');
+  video.id = 'camera-stream-checkall';
+  video.autoplay = true;
+  video.playsInline = true;
+  video.style.cssText = `
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  `;
+
+  // Create canvas for photo capture
+  const canvas = document.createElement('canvas');
+  canvas.id = 'photo-canvas-checkall';
+  canvas.style.cssText = `
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  `;
+
+  // Create photo preview
+  const photoPreview = document.createElement('img');
+  photoPreview.className = 'photo-preview';
+  photoPreview.style.cssText = `
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background-color: #000;
+  `;
+
+  // Create UI for the check-all indicator
+  const checkAllLabel = document.createElement('div');
+  checkAllLabel.className = 'check-all-label';
+  checkAllLabel.innerHTML = `
+    <div class="check-all-badge">
+      <span class="material-icons">done_all</span>
+      <span>一括確認モード</span>
+    </div>
+  `;
+  checkAllLabel.style.cssText = `
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    z-index: 10001;
+  `;
+
+  // Create controls container
+  const controlsContainer = document.createElement('div');
+  controlsContainer.className = 'camera-controls';
+  controlsContainer.style.cssText = `
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+    padding: 20px;
+    z-index: 10001;
+  `;
+
+  // Create buttons
+  const closeButton = document.createElement('button');
+  closeButton.className = 'camera-button close-button';
+  closeButton.style.cssText = `
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.3);
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+  `;
+  closeButton.innerHTML = `<span class="material-icons" style="color: white; font-size: 24px;">close</span>`;
+
+  const captureButton = document.createElement('button');
+  captureButton.className = 'camera-button capture-button';
+  captureButton.style.cssText = `
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background-color: white;
+    border: 4px solid rgba(255, 255, 255, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+  `;
+  captureButton.innerHTML = `<span class="material-icons" style="color: #f44336; font-size: 30px;">photo_camera</span>`;
+
+  // Create retake button (hidden initially)
+  const retakeButton = document.createElement('button');
+  retakeButton.className = 'camera-button retake-button';
+  retakeButton.style.cssText = `
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.3);
+    border: none;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+  `;
+  retakeButton.innerHTML = `<span class="material-icons" style="color: white; font-size: 24px;">replay</span>`;
+
+  // Create save button (hidden initially)
+  const saveButton = document.createElement('button');
+  saveButton.className = 'camera-button save-button';
+  saveButton.style.cssText = `
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background-color: #4CAF50;
+    border: 4px solid rgba(255, 255, 255, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+  `;
+  saveButton.innerHTML = `<span class="material-icons" style="color: white; font-size: 30px;">check</span>`;
+
+  // Assemble the DOM structure
+  controlsContainer.appendChild(closeButton);
+  controlsContainer.appendChild(captureButton);
+  controlsContainer.appendChild(retakeButton);
+  controlsContainer.appendChild(saveButton);
+
+  cameraViewContainer.appendChild(video);
+  cameraViewContainer.appendChild(canvas);
+  cameraViewContainer.appendChild(photoPreview);
+  cameraViewContainer.appendChild(checkAllLabel);
+  cameraViewContainer.appendChild(controlsContainer);
+
+  overlay.appendChild(cameraViewContainer);
+  document.body.appendChild(overlay);
+
+  // Connect video to stream
+  try {
+    video.srcObject = stream;
+    video.onloadedmetadata = () => {
+      video.play().catch((err) => {
+        console.error('Error playing video:', err);
+        closeOverlay();
+        showCameraError('カメラの起動中にエラーが発生しました。');
+      });
+    };
+  } catch (err) {
+    console.error('Error setting video source:', err);
+    closeOverlay();
+    showCameraError('カメラのストリーム設定中にエラーが発生しました。');
+    return;
+  }
+
+  // Handle photo capture
+  captureButton.addEventListener('click', () => {
+    // Set canvas dimensions to match video
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    // Draw video frame to canvas
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Get image data
+    const imageData = canvas.toDataURL('image/jpeg', 0.9);
+
+    // Show preview
+    photoPreview.src = imageData;
+    photoPreview.style.display = 'block';
+    video.style.display = 'none';
+
+    // Update controls
+    captureButton.style.display = 'none';
+    retakeButton.style.display = 'flex';
+    saveButton.style.display = 'flex';
+  });
+
+  // Handle retake
+  retakeButton.addEventListener('click', () => {
+    // Hide preview, show video
+    photoPreview.style.display = 'none';
+    video.style.display = 'block';
+
+    // Update controls
+    captureButton.style.display = 'flex';
+    retakeButton.style.display = 'none';
+    saveButton.style.display = 'none';
+  });
+
+  // Handle save - THIS IS THE KEY DIFFERENCE FOR CHECK-ALL FUNCTIONALITY
+  saveButton.addEventListener('click', () => {
+    // Save bulk photo to history
+    const timestamp = new Date().toISOString();
+    const photoId = 'bulk_photo_' + Date.now();
+
+    // Initialize photo history structure if needed
+    if (!state.bulkPhotoHistory) {
+      state.bulkPhotoHistory = {
+        north: [],
+        east: [],
+        south: [],
+        west: [],
+      };
+    }
+
+    // Add new photo to current direction's history
+    state.bulkPhotoHistory[state.selectedDirection].push({
+      id: photoId,
+      url: photoPreview.src,
+      timestamp: timestamp,
+      direction: state.selectedDirection,
+    });
+
+    // Mark all items in this direction as completed
+    state.checklist.forEach((item) => {
+      if (
+        item.direction === state.selectedDirection &&
+        item.status !== 'issue'
+      ) {
+        item.status = 'completed';
+      }
+    });
+
+    // Update UI
+    updateChecklist();
+    updateProgress();
+
+    // Update photo history button visibility
+    updateBulkPhotoHistoryButtonVisibility();
+
+    // Close overlay
+    closeOverlay();
+  });
+
+  // Handle close
+  closeButton.addEventListener('click', closeOverlay);
+
+  // Function to close and clean up
+  function closeOverlay() {
+    // Stop all video tracks
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop());
+    }
+
+    // Remove overlay from DOM
+    overlay.remove();
+  }
+
+  // Add swipe to close
+  let touchStartY = 0;
+  overlay.addEventListener('touchstart', (e) => {
+    touchStartY = e.touches[0].clientY;
+  });
+
+  overlay.addEventListener('touchmove', (e) => {
+    const touchY = e.touches[0].clientY;
+    const diff = touchY - touchStartY;
+
+    // If swiping down significantly, close overlay
+    if (diff > 100) {
+      closeOverlay();
+    }
+  });
+
+  return overlay;
 }
 
 function createCameraView() {
@@ -2270,4 +2687,115 @@ function createCameraView() {
   `;
 
   document.append(cameraView);
+}
+
+// Add function to update the bulk photo history button visibility
+function updateBulkPhotoHistoryButtonVisibility() {
+  const historyButton = document.getElementById('bulk-photo-history-button');
+  if (!historyButton) {
+    // Create the history button if it doesn't exist
+    setupBulkPhotoHistoryButton();
+    return;
+  }
+
+  // Check if we have any bulk photos for current direction
+  const hasPhotos =
+    state.bulkPhotoHistory &&
+    state.bulkPhotoHistory[state.selectedDirection] &&
+    state.bulkPhotoHistory[state.selectedDirection].length > 0;
+
+  // Show or hide button
+  historyButton.style.display = hasPhotos ? 'flex' : 'none';
+}
+
+// Add function to setup bulk photo history button
+function setupBulkPhotoHistoryButton() {
+  // If button already exists, don't create it again
+  if (document.getElementById('bulk-photo-history-button')) return;
+
+  // Create button
+  const historyButton = document.createElement('button');
+  historyButton.id = 'bulk-photo-history-button';
+  historyButton.className = 'action-button bulk-photo-history-button';
+  historyButton.innerHTML = '<span class="material-icons">collections</span>';
+  historyButton.style.cssText = `
+    background-color: var(--primary-color); 
+    color: white;
+    margin-right: 8px;
+  `;
+
+  // Find the check-all-camera button
+  const cameraButton = document.getElementById('check-all-camera');
+  if (cameraButton && cameraButton.parentNode) {
+    // Insert history button before camera button
+    cameraButton.parentNode.insertBefore(historyButton, cameraButton);
+  }
+
+  // Add click handler to show bulk photo history
+  historyButton.addEventListener('click', showBulkPhotoHistory);
+
+  // Update visibility
+  updateBulkPhotoHistoryButtonVisibility();
+}
+
+// Add function to show bulk photo history
+function showBulkPhotoHistory() {
+  if (
+    !state.bulkPhotoHistory ||
+    !state.bulkPhotoHistory[state.selectedDirection] ||
+    state.bulkPhotoHistory[state.selectedDirection].length === 0
+  ) {
+    return;
+  }
+
+  const photos = state.bulkPhotoHistory[state.selectedDirection];
+
+  // Create modal
+  const modal = document.createElement('div');
+  modal.className = 'modal bulk-photo-history-modal';
+
+  // Sort photos newest first
+  photos.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+  const directionText = DIRECTIONS[state.selectedDirection].text;
+
+  modal.innerHTML = `
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>${directionText}方向の一括確認写真</h3>
+        <button class="close-modal-button">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="bulk-photo-gallery">
+          ${photos
+            .map(
+              (photo) => `
+            <div class="gallery-item">
+              <div class="gallery-image-container">
+                <img src="${photo.url}" alt="一括確認写真">
+              </div>
+              <div class="gallery-item-details">
+                <p class="gallery-item-time">${formatDate(photo.timestamp)}</p>
+              </div>
+            </div>
+          `
+            )
+            .join('')}
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Add close button handler
+  const closeButton = modal.querySelector('.close-modal-button');
+  closeButton.addEventListener('click', () => {
+    modal.remove();
+  });
+
+  // Add to document
+  document.body.appendChild(modal);
+  modal.style.display = 'flex';
 }
