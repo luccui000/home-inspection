@@ -369,16 +369,16 @@ html, body {
 /* Camera Button */
 .check-all-camera {
   position: absolute;
-  bottom: 20px;
-  right: 16px;
+  bottom: 18px;
+  right: 350px;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 24px;
+  padding: 10px 16px;
   background: var(--primary-color);
   color: var(--white);
   border: none;
-  border-radius: 24px;
+  border-radius: 12px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -649,6 +649,7 @@ html, body {
   border-radius: 12px;
   padding: 6px 16px 6px 10px; /* Increased right padding */
   overflow: hidden; /* Prevent scrollbar from causing container overflow */
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Scrollbar Styles */
@@ -1182,36 +1183,19 @@ html, body {
   font-size: 16px;
 }
 
-.empty-photos {
-  text-align: center;
-  padding: 24px;
-  background: var(--secondary-color);
-  border-radius: 8px;
-  color: var(--text-secondary);
-}
-
-.empty-photos {
+.open-camera {
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
-  padding: 32px;
-  border-radius: 8px;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  height: 100px;
-  border: 2px dashed var(--border-color);
-  background-color: white;
+  align-items: center;
 }
  
 
-.empty-photos .camera-icon {
+.open-camera .camera-icon {
   font-size: 32px;
   margin-bottom: 8px;
 }
 
-.empty-photos p {
+.open-camera p {
   margin: 0;
   font-size: 14px;
 }
