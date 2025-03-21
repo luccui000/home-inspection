@@ -409,6 +409,8 @@ html, body {
   border: 1px solid var(--border-color);
   border-radius: 8px;
   background: var(--white);
+  padding: 6px 12px;
+  gap: 6px;
 }
 
 .shape-icon {
@@ -440,7 +442,21 @@ html, body {
   font-size: 14px;
   color: var(--text-primary);
   min-width: 50px;
+  display: flex;
+  align-items: center;
 }
+
+.checklist-text-image {
+  width: 24px;
+  height: 24px;
+  font-size: 14px;
+  display: flex;
+}
+
+.checklist-text-image .material-icons {
+  font-size: 16px;
+}
+
 
 .photo-indicator {
   display: flex;
@@ -509,7 +525,7 @@ html, body {
 .checklist-item {
   background: var(--white);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: 8px;
   margin-bottom: 8px;
   transition: all 0.2s ease;
 }
@@ -522,7 +538,6 @@ html, body {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 16px;
   min-height: 48px;
 }
 
@@ -554,6 +569,26 @@ html, body {
   font-size: 14px;
   font-weight: 500;
   color: var(--text-primary);
+  display: flex;
+}
+
+.checklist-text span {
+  flex: 1;
+}
+
+.checklist-text-image {
+  width: 30px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--border-color);
+  border-radius: 8px;
+  padding: 0 4px;
+}
+
+.checklist-text-image .material-icons {
+  margin-right: -20px;
 }
 
 /* Photo Indicator */
@@ -583,8 +618,9 @@ html, body {
 /* Action Buttons */
 .checklist-actions {
   display: flex;
+  justify-content: center;
+  align-items: center;
   gap: 8px;
-  padding: 0 16px 12px;
 }
 
 .action-button {
@@ -649,7 +685,6 @@ html, body {
   border-radius: 12px;
   padding: 6px 16px 6px 10px; /* Increased right padding */
   overflow: hidden; /* Prevent scrollbar from causing container overflow */
-  -webkit-overflow-scrolling: touch;
 }
 
 /* Scrollbar Styles */
@@ -841,7 +876,6 @@ html, body {
 }
 
 .issue-form textarea {
-  width: 97%;
   height: 100px;
   padding: 8px;
   border: 1px solid var(--border-color);
@@ -856,6 +890,7 @@ html, body {
 .photo-preview {
   position: relative;
   aspect-ratio: 1;
+  border-radius: 8px;
 }
 
 .photo-preview img {
@@ -1187,6 +1222,7 @@ html, body {
   display: flex;
   justify-content: center;
   align-items: center;
+  border: 2px dashed var(--border-color);
 }
  
 
@@ -1311,7 +1347,6 @@ html, body {
   display: grid;
   grid-template-columns: repeat(4, 1fr); /* Exactly 4 columns */
   gap: 16px;
-  padding: 16px;
 }
 
 .bulk-photo-gallery .gallery-item {
@@ -1361,6 +1396,7 @@ html, body {
 
 /* Add styles for the upload button */
 .upload-container {
+  margin-top: 20px;
   padding: 16px;
   text-align: center;
   border-top: 1px solid #eee;
@@ -1402,3 +1438,84 @@ html, body {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+.issue-description {
+  width: 100%;
+  min-height: 120px;
+  border: 4px solid var(--primary-color);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 16px;
+  resize: vertical;
+  transition: border-color 0.2s ease-in-out;
+  box-sizing: border-box;
+}
+
+.issue-description:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
+}
+
+.issue-description::placeholder {
+  color: #aaa;
+}
+
+.item-photo-history-modal .modal-content {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.item-photo-gallery {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* Exactly 4 columns */
+  gap: 16px;
+}
+
+.item-photo-gallery .gallery-item {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  cursor: pointer;
+  transition: transform 0.2s;
+  background: white;
+}
+
+.item-photo-gallery .gallery-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.item-photo-gallery .gallery-image-container {
+  aspect-ratio: 4/3;
+  overflow: hidden;
+}
+
+.item-photo-gallery .gallery-image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.item-photo-gallery .gallery-item-details {
+  padding: 10px;
+  text-align: center;
+}
+
+.item-photo-gallery .gallery-item-time {
+  font-size: 12px;
+  color: #666;
+  margin: 0;
+}
+
+.item-photo-history-modal .upload-container {
+  padding: 16px;
+  text-align: center;
+  margin-top: 16px;
+  border-top: 1px solid #eee;
+}
+

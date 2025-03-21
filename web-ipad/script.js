@@ -400,7 +400,7 @@ function setupChecklistItemHandlers() {
   document.querySelectorAll('.checklist-item').forEach((item) => {
     const checkButton = item.querySelector('.check-button');
     const secondButton = item.querySelector('.close-button, .photo-button');
-    const photoIndicator = item.querySelector('.photo-indicator');
+    const photoIndicator = item.querySelector('.checklist-text-image');
     const itemId = parseInt(item.dataset.id);
 
     // Remove existing listeners to prevent duplicates
@@ -412,7 +412,7 @@ function setupChecklistItemHandlers() {
     // Get fresh references after replacement
     const newCheckButton = item.querySelector('.check-button');
     const newSecondButton = item.querySelector('.close-button, .photo-button');
-    const newPhotoIndicator = item.querySelector('.photo-indicator');
+    const newPhotoIndicator = item.querySelector('.checklist-text-image');
 
     // Add click handler for the photo indicator
     if (newPhotoIndicator) {
@@ -453,7 +453,12 @@ function setupChecklistItemHandlers() {
 // Add this new function to show photo history for a specific item
 function showItemPhotoHistory(itemId) {
   const item = state.checklist.find((i) => i.id === parseInt(itemId));
-  if (!item || !item.photos || item.photos.length === 0) return;
+  if (!item) return;
+
+  // Initialize photos array if needed
+  if (!item.photos) {
+    item.photos = [];
+  }
 
   // Create modal for the photo history
   const modal = document.createElement('div');
@@ -490,6 +495,14 @@ function showItemPhotoHistory(itemId) {
             )
             .join('')}
         </div>
+        
+        <div class="upload-container">
+          <label for="item-photo-upload-${itemId}" class="upload-button">
+            <span class="material-icons">upload</span>
+            <span>写真をアップロード</span>
+          </label>
+          <input type="file" id="item-photo-upload-${itemId}" accept="image/*" style="display: none;" />
+        </div>
       </div>
     </div>
   `;
@@ -502,6 +515,98 @@ function showItemPhotoHistory(itemId) {
   closeButton.addEventListener('click', () => {
     modal.remove();
   });
+
+  // Handle file upload
+  const fileInput = modal.querySelector(`#item-photo-upload-${itemId}`);
+  fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Check if file is an image
+    if (!file.type.startsWith('image/')) {
+      alert('画像ファイルを選択してください。');
+      return;
+    }
+
+    // Show loading indicator
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.className = 'loading-indicator';
+    loadingIndicator.innerHTML = `
+      <div class="spinner"></div>
+      <p>アップロード中...</p>
+    `;
+    loadingIndicator.style.cssText = `
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255,255,255,0.8);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    `;
+    modal.querySelector('.modal-content').appendChild(loadingIndicator);
+
+    // Read the file
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const imageUrl = event.target.result;
+
+      // Add to item photos
+      const photoId = 'photo_' + Date.now();
+      const timestamp = new Date().toISOString();
+
+      // Add the photo to the item
+      item.photos.push({
+        id: photoId,
+        url: imageUrl,
+        timestamp: timestamp,
+        isUploaded: true,
+      });
+
+      // Update UI to show new photo count
+      updateChecklist();
+
+      // Update photo gallery in the modal
+      updateItemPhotoGallery(modal, item);
+
+      // Remove loading indicator
+      loadingIndicator.remove();
+
+      // Reset file input
+      fileInput.value = '';
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+
+// Add this helper function to update the item photo gallery
+function updateItemPhotoGallery(modal, item) {
+  const galleryContainer = modal.querySelector('.item-photo-gallery');
+  if (!galleryContainer) return;
+
+  const photos = [...item.photos].sort(
+    (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+  );
+
+  galleryContainer.innerHTML = photos
+    .map(
+      (photo) => `
+    <div class="gallery-item">
+      <div class="gallery-image-container">
+        <img src="${photo.url}" alt="Issue photo">
+      </div>
+      <div class="gallery-item-details">
+        <p class="gallery-item-time">${formatDate(photo.timestamp)}</p>
+      </div>
+    </div>
+  `
+    )
+    .join('');
 }
 
 // Handle item completion
@@ -1094,6 +1199,9 @@ function updateChecklist(filteredItems = null) {
 
   // Update progress once
   updateProgress();
+
+  // Fix scrolling issues
+  fixChecklistScrolling();
 }
 
 // Helper function to render checklist group
@@ -1161,17 +1269,16 @@ function renderChecklistItem(item) {
         <div class="shape-icon ${item.shape}" 
              style="${getShapeStyle(item)};">
         </div>
-        <div class="checklist-text">${item.name}</div>
-        ${
-          item.photos.length
-            ? `
-          <div class="photo-indicator" data-item-id="${item.id}">
+        <div class="checklist-text"><span>${item.name}</span> ${
+    item.photos.length > 0
+      ? `
+          <div class="checklist-text-image" data-item-id="${item.id}">
             <span class="material-icons">images</span>
             <span class="photo-count">${item.photos.length}</span>
           </div>
         `
-            : ''
-        }
+      : ''
+  }</div>
       </div>
       <div class="checklist-actions">
         <button class="action-button check-button ${
@@ -2988,3 +3095,6 @@ function updateBulkPhotoGallery(modal) {
     )
     .join('');
 }
+
+// Add this function to fix checklist scrolling issues
+function fixChecklistScrolling() {}
