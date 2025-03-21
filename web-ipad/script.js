@@ -274,6 +274,8 @@ function setupDirectionNav() {
       // Update selected direction
       const direction = btn.dataset.direction;
       state.selectedDirection = direction;
+      state.selectedFilters = new Set(['all']);
+      state.selectedDetails = new Set(['all']);
 
       updateBlueprintImage(direction);
 
@@ -398,15 +400,30 @@ function setupChecklistItemHandlers() {
   document.querySelectorAll('.checklist-item').forEach((item) => {
     const checkButton = item.querySelector('.check-button');
     const secondButton = item.querySelector('.close-button, .photo-button');
+    const photoIndicator = item.querySelector('.photo-indicator');
     const itemId = parseInt(item.dataset.id);
 
     // Remove existing listeners to prevent duplicates
     checkButton?.replaceWith(checkButton.cloneNode(true));
     secondButton?.replaceWith(secondButton.cloneNode(true));
+    if (photoIndicator)
+      photoIndicator.replaceWith(photoIndicator.cloneNode(true));
 
     // Get fresh references after replacement
     const newCheckButton = item.querySelector('.check-button');
     const newSecondButton = item.querySelector('.close-button, .photo-button');
+    const newPhotoIndicator = item.querySelector('.photo-indicator');
+
+    // Add click handler for the photo indicator
+    if (newPhotoIndicator) {
+      newPhotoIndicator.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent triggering the item click
+        showItemPhotoHistory(itemId);
+      });
+
+      // Make it look clickable
+      newPhotoIndicator.style.cursor = 'pointer';
+    }
 
     // Add new listeners
     newCheckButton?.addEventListener('click', () => {
@@ -430,6 +447,60 @@ function setupChecklistItemHandlers() {
         openIssueModal(itemId);
       }
     });
+  });
+}
+
+// Add this new function to show photo history for a specific item
+function showItemPhotoHistory(itemId) {
+  const item = state.checklist.find((i) => i.id === parseInt(itemId));
+  if (!item || !item.photos || item.photos.length === 0) return;
+
+  // Create modal for the photo history
+  const modal = document.createElement('div');
+  modal.className = 'modal item-photo-history-modal';
+
+  // Sort photos by timestamp (newest first)
+  const photos = [...item.photos].sort(
+    (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+  );
+
+  modal.innerHTML = `
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>${item.name} - 写真履歴</h3>
+        <button class="close-modal-button">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="item-photo-gallery">
+          ${photos
+            .map(
+              (photo) => `
+            <div class="gallery-item">
+              <div class="gallery-image-container">
+                <img src="${photo.url}" alt="Issue photo">
+              </div>
+              <div class="gallery-item-details">
+                <p class="gallery-item-time">${formatDate(photo.timestamp)}</p>
+              </div>
+            </div>
+          `
+            )
+            .join('')}
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Add event handler to close button
+  document.body.appendChild(modal);
+  modal.style.display = 'flex';
+
+  const closeButton = modal.querySelector('.close-modal-button');
+  closeButton.addEventListener('click', () => {
+    modal.remove();
   });
 }
 
@@ -2740,15 +2811,16 @@ function setupBulkPhotoHistoryButton() {
 
 // Add function to show bulk photo history
 function showBulkPhotoHistory() {
-  if (
-    !state.bulkPhotoHistory ||
-    !state.bulkPhotoHistory[state.selectedDirection] ||
-    state.bulkPhotoHistory[state.selectedDirection].length === 0
-  ) {
-    return;
+  if (!state.bulkPhotoHistory) {
+    state.bulkPhotoHistory = {
+      north: [],
+      east: [],
+      south: [],
+      west: [],
+    };
   }
 
-  const photos = state.bulkPhotoHistory[state.selectedDirection];
+  const photos = state.bulkPhotoHistory[state.selectedDirection] || [];
 
   // Create modal
   const modal = document.createElement('div');
@@ -2768,7 +2840,7 @@ function showBulkPhotoHistory() {
         </button>
       </div>
       
-      <div class="modal-body">
+      <div class="modal-body"> 
         <div class="bulk-photo-gallery">
           ${photos
             .map(
@@ -2785,9 +2857,21 @@ function showBulkPhotoHistory() {
             )
             .join('')}
         </div>
+
+        <div class="upload-container">
+          <label for="bulk-photo-upload" class="upload-button">
+            <span class="material-icons">upload</span>
+            <span>写真をアップロード</span>
+          </label>
+          <input type="file" id="bulk-photo-upload" accept="image/*" style="display: none;" />
+        </div>
       </div>
     </div>
   `;
+
+  // Add to document
+  document.body.appendChild(modal);
+  modal.style.display = 'flex';
 
   // Add close button handler
   const closeButton = modal.querySelector('.close-modal-button');
@@ -2795,7 +2879,112 @@ function showBulkPhotoHistory() {
     modal.remove();
   });
 
-  // Add to document
-  document.body.appendChild(modal);
-  modal.style.display = 'flex';
+  // Handle file upload
+  const fileInput = modal.querySelector('#bulk-photo-upload');
+  fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Check if file is an image
+    if (!file.type.startsWith('image/')) {
+      alert('画像ファイルを選択してください。');
+      return;
+    }
+
+    // Show loading indicator
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.className = 'loading-indicator';
+    loadingIndicator.innerHTML = `
+      <div class="spinner"></div>
+      <p>アップロード中...</p>
+    `;
+    loadingIndicator.style.cssText = `
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255,255,255,0.8);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    `;
+    modal.querySelector('.modal-content').appendChild(loadingIndicator);
+
+    // Read the file
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const imageUrl = event.target.result;
+
+      // Add to bulkPhotoHistory
+      const photoId = 'bulk_photo_' + Date.now();
+      const timestamp = new Date().toISOString();
+
+      if (!state.bulkPhotoHistory[state.selectedDirection]) {
+        state.bulkPhotoHistory[state.selectedDirection] = [];
+      }
+
+      state.bulkPhotoHistory[state.selectedDirection].push({
+        id: photoId,
+        url: imageUrl,
+        timestamp: timestamp,
+        direction: state.selectedDirection,
+        isUploaded: true,
+      });
+
+      // Mark all items in this direction as completed
+      state.checklist.forEach((item) => {
+        if (
+          item.direction === state.selectedDirection &&
+          item.status !== 'issue'
+        ) {
+          item.status = 'completed';
+        }
+      });
+
+      // Update checklist UI
+      updateChecklist();
+      updateProgress();
+
+      // Update button visibility
+      updateBulkPhotoHistoryButtonVisibility();
+
+      // Update gallery
+      updateBulkPhotoGallery(modal);
+
+      // Remove loading indicator
+      loadingIndicator.remove();
+
+      // Reset file input
+      fileInput.value = '';
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+
+// Add this helper function to update the gallery in the modal
+function updateBulkPhotoGallery(modal) {
+  const galleryContainer = modal.querySelector('.bulk-photo-gallery');
+  if (!galleryContainer) return;
+
+  const photos = state.bulkPhotoHistory[state.selectedDirection] || [];
+  photos.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+  galleryContainer.innerHTML = photos
+    .map(
+      (photo) => `
+    <div class="gallery-item">
+      <div class="gallery-image-container">
+        <img src="${photo.url}" alt="一括確認写真">
+      </div>
+      <div class="gallery-item-details">
+        <p class="gallery-item-time">${formatDate(photo.timestamp)}</p>
+      </div>
+    </div>
+  `
+    )
+    .join('');
 }
