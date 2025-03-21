@@ -367,7 +367,7 @@ html, body {
 }
 
 /* Camera Button */
-.camera-button {
+.check-all-camera {
   position: absolute;
   bottom: 20px;
   right: 16px;
@@ -839,7 +839,7 @@ html, body {
   padding: 20px;
 }
 
-.issue-modal textarea {
+.issue-form textarea {
   width: 97%;
   height: 100px;
   padding: 8px;
@@ -848,11 +848,8 @@ html, body {
   resize: vertical;
 }
 
-.issue-photos {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 8px;
-  margin: 16px 0;
+.issue-form textarea:focus {
+  border-color: var(--primary-color);
 }
 
 .photo-preview {
@@ -943,7 +940,7 @@ html, body {
   padding: 20px;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  z-index: 1000;
+  z-index: 999999;
 }
 
 /* Shape Icons */
@@ -1028,7 +1025,7 @@ html, body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .photos-header h4 {
@@ -1053,7 +1050,7 @@ html, body {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 12px;
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
 .photo-preview {
@@ -1146,13 +1143,6 @@ html, body {
   font-size: 20px;
 }
 
-.issue-photos {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 12px;
-  margin-top: 16px;
-}
-
 .photo-preview {
   position: relative;
   aspect-ratio: 1;
@@ -1206,21 +1196,19 @@ html, body {
   align-items: center;
   justify-content: center;
   padding: 32px;
-  background: var(--secondary-color);
   border-radius: 8px;
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
+  height: 100px;
+  border: 2px dashed var(--border-color);
+  background-color: white;
 }
-
-.empty-photos:hover {
-  background: var(--border-color);
-}
+ 
 
 .empty-photos .camera-icon {
   font-size: 32px;
   margin-bottom: 8px;
-  color: var(--primary-color);
 }
 
 .empty-photos p {
@@ -1265,4 +1253,24 @@ html, body {
 
 .issue-indicator .material-icons {
   font-size: 12px;
+}
+
+#check-all-camera {
+  z-index: 99999;
+}
+
+.camera-confirm-modal {
+  background: rgba(0, 0, 0, 0.5)
+}
+
+.camera-confirm-modal .modal-content {
+  background: white;
+  border-radius: 12px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.camera-confirm-modal .modal-header {
+  display: flex;
+  justify-content: space-between;
 }

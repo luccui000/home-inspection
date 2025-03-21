@@ -55,13 +55,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setupShapeButtonEvents();
   setupBlueprintZoom();
+
+  setupCameraButtonEvent();
 });
 
-function getShapeStyle(detail) {
-  const color = getShapeColor(detail);
-  const shape = getShapeIcon(detail);
+function getShapeStyle(item) {
+  const color = item.color;
 
-  switch (shape) {
+  switch (item.shape) {
     case 'triangle':
       return `border-left: 12px solid transparent; 
               border-right: 12px solid transparent; 
@@ -351,6 +352,7 @@ function openCamera(itemId) {
 
 function openIssueModal(itemId) {
   const item = state.checklist.find((i) => i.id === itemId);
+  console.log(item);
   if (!item) return;
 
   const modal = document.createElement('div');
@@ -395,7 +397,6 @@ function openIssueModal(itemId) {
                     .join('')
                 : `<div class="empty-photos" onclick="openCamera(${itemId})">
                 <span class="material-icons camera-icon">photo_camera</span>
-                <p>写真を追加する</p>
               </div>`
             }
           </div>
@@ -685,8 +686,8 @@ function renderChecklistItem(item) {
   return `
     <div class="checklist-item ${item.status}" data-id="${item.id}">
       <div class="checklist-header">
-        <div class="shape-icon ${getShapeIcon(item.detail)}" 
-             style="${getShapeStyle(item.detail)}">
+        <div class="shape-icon ${item.shape}" 
+             style="${getShapeStyle(item)};">
         </div>
         <div class="checklist-text">${item.name}</div>
         ${
@@ -1021,6 +1022,7 @@ function addPinnedIcon(x, y) {
 
   // Create new icon with selected shape
   const newIcon = {
+    iconId: null,
     id: Date.now().toString(),
     shape: state.selectedShape.shape,
     color: state.selectedShape.color,
@@ -1030,17 +1032,18 @@ function addPinnedIcon(x, y) {
     hasIssue: false,
   };
 
-  // Add to pinned icons list
-  state.pinnedIcons.push(newIcon);
-
   // Find matching checklist item for this shape and color
   const matchingItem = state.checklist.find((item) => {
-    const iconConfig = getItemIconConfig(item.part, item.detail);
     return (
-      iconConfig.shape === state.selectedShape.shape &&
-      iconConfig.color === state.selectedShape.color
+      item.shape === state.selectedShape.shape &&
+      item.color === state.selectedShape.color
     );
   });
+
+  newIcon.iconId = matchingItem?.id;
+
+  // Add to pinned icons list
+  state.pinnedIcons.push(newIcon);
 
   // If we found a matching item
   if (matchingItem) {
@@ -1177,6 +1180,7 @@ function updateBlueprintIcons() {
       (icon) => `
     <div class="pinned-icon ${icon.hasIssue ? 'has-issue' : ''}" 
          data-id="${icon.id}"
+         data-icon-id="${icon.iconId}"
          data-original-x="${icon.x}"
          data-original-y="${icon.y}"
          style="position: absolute;
@@ -1189,16 +1193,7 @@ function updateBlueprintIcons() {
                          scale(${currentScale});">
       <div class="icon-shape ${icon.shape}-shape"
            style="${getShapeCSSByType(icon)}">
-      </div>
-      ${
-        icon.hasIssue
-          ? `
-        <span class="issue-indicator">
-          <span class="material-icons">error</span>
-        </span>
-      `
-          : ''
-      }
+      </div> 
     </div>
   `
     )
@@ -1250,10 +1245,10 @@ function setupPinnedIconEvents() {
 
     // Click to show issue/details
     icon.addEventListener('click', () => {
-      const iconId = icon.dataset.id;
-      const iconData = state.pinnedIcons.find((i) => i.id === iconId);
-      if (iconData) {
-        showIconDetails(iconData);
+      const iconId = icon.dataset.iconId;
+
+      if (iconId) {
+        openIssueModal(iconId);
       }
     });
   });
@@ -1262,17 +1257,57 @@ function setupPinnedIconEvents() {
 function showDeleteConfirm(icon) {
   const iconId = icon.dataset.id;
 
+  // Create overlay element
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 99998;
+  `;
+
+  // Create confirmation dialog
   const confirm = document.createElement('div');
   confirm.className = 'delete-confirm';
+  confirm.style.cssText = `
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    max-width: 80%;
+    width: 320px;
+    text-align: center;
+    z-index: 99999;
+  `;
+
   confirm.innerHTML = `
-    <p>このマーカーを削除しますか？</p>
-    <div class="confirm-actions">
-      <button class="cancel-button">キャンセル</button>
-      <button class="delete-button">削除</button>
+    <p style="margin-bottom: 16px; font-size: 16px; font-weight: 500;">このマーカーを削除しますか？</p>
+    <div class="confirm-actions" style="display: flex; justify-content: space-between;">
+      <button class="cancel-button" style="flex: 1; padding: 8px 12px; margin-right: 8px; background-color: #f0f0f0; border: none; border-radius: 4px; font-weight: 500;">キャンセル</button>
+      <button class="delete-button" style="flex: 1; padding: 8px 12px; background-color: #f44336; color: white; border: none; border-radius: 4px; font-weight: 500;">削除</button>
     </div>
   `;
 
-  confirm.querySelector('.cancel-button').onclick = () => confirm.remove();
+  // Handle cancellation - both by cancel button and by clicking overlay
+  const cancelAction = () => {
+    overlay.remove();
+  };
+
+  confirm.querySelector('.cancel-button').onclick = cancelAction;
+  overlay.onclick = (e) => {
+    if (e.target === overlay) {
+      cancelAction();
+    }
+  };
+
+  // Handle deletion
   confirm.querySelector('.delete-button').onclick = () => {
     // Remove from state
     state.pinnedIcons = state.pinnedIcons.filter((i) => i.id !== iconId);
@@ -1286,20 +1321,29 @@ function showDeleteConfirm(icon) {
 
     // Update display
     updateBlueprintIcons();
-    confirm.remove();
+    overlay.remove();
   };
 
-  document.body.appendChild(confirm);
+  // Add confirmation dialog to overlay, then add overlay to body
+  overlay.appendChild(confirm);
+  document.body.appendChild(overlay);
+
+  // Prevent default touch behavior on overlay to avoid accidental interactions
+  overlay.addEventListener(
+    'touchmove',
+    (e) => {
+      e.preventDefault();
+    },
+    { passive: false }
+  );
 }
 
-function showIconDetails(iconData) {
+function showIconDetails(iconId, iconData) {
   // Find associated checklist item
-  const item = state.checklist.find(
-    (i) => i.pinnedIcons && i.pinnedIcons.includes(iconData.id)
-  );
+  const item = state.checklist.find((i) => i.id === parseInt(iconId));
 
   if (item) {
-    openIssueModal(item);
+    openIssueModal(iconId);
   }
 }
 
@@ -1380,7 +1424,6 @@ function setupIssueModalHandlers(modal, itemId) {
                     .join('')
                 : `<div class="empty-photos" onclick="showCameraConfirm(${itemId})">
                 <span class="material-icons camera-icon">photo_camera</span>
-                <p>写真を追加する</p>
               </div>`
             }
           </div>
@@ -1519,4 +1562,34 @@ function showCameraError() {
 
   document.body.appendChild(error);
   error.style.display = 'flex';
+}
+
+function setupCameraButtonEvent() {
+  const cameraButton = document.getElementById('check-all-camera');
+
+  cameraButton.addEventListener('click', () => {
+    console.log('cameraButton');
+  });
+}
+
+function createCameraView() {
+  const cameraView = document.createElement('div');
+
+  cameraView.className = 'camera-view';
+  cameraView.innerHTML = `
+    <div class="camera-container">
+      <video id="camera-preview" autoplay playsinline></video>
+      <canvas id="photo-canvas" style="display: none;"></canvas>
+      <div class="camera-controls">
+        <button class="capture-button">
+          <span class="material-icons">photo_camera</span>
+        </button>
+        <button class="close-button">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.appendChild(cameraView);
 }

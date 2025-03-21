@@ -8,6 +8,8 @@ let checklistItems = [
     direction: 'north',
     status: 'pending',
     photos: [],
+    shape: 'square',
+    color: '#3b82f6',
   },
   {
     id: 2,
@@ -17,6 +19,8 @@ let checklistItems = [
     direction: 'north',
     status: 'pending',
     photos: [],
+    shape: 'square',
+    color: '#3b82f6',
   },
   {
     id: 3,
@@ -26,6 +30,8 @@ let checklistItems = [
     direction: 'north',
     status: 'pending',
     photos: [],
+    shape: 'square',
+    color: '#3b82f6',
   },
   {
     id: 4,
@@ -35,6 +41,8 @@ let checklistItems = [
     direction: 'north',
     status: 'pending',
     photos: [],
+    shape: 'square',
+    color: '#3b82f6',
   },
   {
     id: 5,
@@ -44,6 +52,8 @@ let checklistItems = [
     direction: 'north',
     status: 'pending',
     photos: [],
+    shape: 'triangle',
+    color: '#ef4444',
   },
   {
     id: 6,
@@ -53,6 +63,8 @@ let checklistItems = [
     direction: 'north',
     status: 'pending',
     photos: [],
+    shape: 'circle',
+    color: '#ef4444',
   },
   {
     id: 7,
@@ -62,6 +74,8 @@ let checklistItems = [
     direction: 'north',
     status: 'pending',
     photos: [],
+    shape: 'square',
+    color: '#ef4444',
   },
   {
     id: 8,
@@ -71,6 +85,8 @@ let checklistItems = [
     direction: 'north',
     status: 'pending',
     photos: [],
+    shape: 'square',
+    color: '#3b82f6',
   },
   {
     id: 9,
@@ -80,6 +96,8 @@ let checklistItems = [
     direction: 'north',
     status: 'pending',
     photos: [],
+    shape: 'triangle',
+    color: '#3b82f6',
   },
   {
     id: 10,
@@ -89,6 +107,8 @@ let checklistItems = [
     direction: 'north',
     status: 'pending',
     photos: [],
+    shape: 'square',
+    color: '#ef4444',
   },
 
   // EAST direction items (10 items)
@@ -100,6 +120,8 @@ let checklistItems = [
     direction: 'east',
     status: 'pending',
     photos: [],
+    shape: 'square',
+    color: '#3b82f6',
   },
   {
     id: 12,
@@ -109,6 +131,8 @@ let checklistItems = [
     direction: 'east',
     status: 'pending',
     photos: [],
+    shape: 'square',
+    color: '#3b82f6',
   },
   {
     id: 13,
@@ -118,6 +142,8 @@ let checklistItems = [
     direction: 'east',
     status: 'pending',
     photos: [],
+    shape: 'square',
+    color: '#3b82f6',
   },
   {
     id: 14,
@@ -127,6 +153,8 @@ let checklistItems = [
     direction: 'east',
     status: 'pending',
     photos: [],
+    shape: 'circle',
+    color: '#ef4444',
   },
   {
     id: 15,
@@ -136,6 +164,8 @@ let checklistItems = [
     direction: 'east',
     status: 'pending',
     photos: [],
+    shape: 'triangle',
+    color: '#ef4444',
   },
   {
     id: 16,
@@ -145,6 +175,8 @@ let checklistItems = [
     direction: 'east',
     status: 'pending',
     photos: [],
+    shape: 'square',
+    color: '#3b82f6',
   },
   {
     id: 17,
@@ -154,6 +186,8 @@ let checklistItems = [
     direction: 'east',
     status: 'pending',
     photos: [],
+    shape: 'triangle',
+    color: '#3b82f6',
   },
   {
     id: 18,
@@ -163,6 +197,8 @@ let checklistItems = [
     direction: 'east',
     status: 'pending',
     photos: [],
+    shape: 'square',
+    color: '#ef4444',
   },
   {
     id: 19,
@@ -172,6 +208,8 @@ let checklistItems = [
     direction: 'east',
     status: 'pending',
     photos: [],
+    shape: 'square',
+    color: '#ef4444',
   },
   {
     id: 20,
@@ -181,6 +219,8 @@ let checklistItems = [
     direction: 'east',
     status: 'pending',
     photos: [],
+    shape: 'circle',
+    color: '#3b82f6',
   },
 
   // SOUTH direction items (10 items)
@@ -192,6 +232,8 @@ let checklistItems = [
     direction: 'south',
     status: 'pending',
     photos: [],
+    shape: 'square',
+    color: '#3b82f6',
   },
   {
     id: 22,
@@ -201,6 +243,8 @@ let checklistItems = [
     direction: 'south',
     status: 'pending',
     photos: [],
+    shape: 'square',
+    color: '#3b82f6',
   },
   {
     id: 23,
@@ -210,6 +254,8 @@ let checklistItems = [
     direction: 'south',
     status: 'pending',
     photos: [],
+    shape: 'square',
+    color: '#3b82f6',
   },
   {
     id: 24,
@@ -219,6 +265,8 @@ let checklistItems = [
     direction: 'south',
     status: 'pending',
     photos: [],
+    shape: 'circle',
+    color: '#ef4444',
   },
   {
     id: 25,
@@ -228,6 +276,8 @@ let checklistItems = [
     direction: 'south',
     status: 'pending',
     photos: [],
+    shape: 'triangle',
+    color: '#3b82f6',
   },
   {
     id: 26,
@@ -237,6 +287,8 @@ let checklistItems = [
     direction: 'south',
     status: 'pending',
     photos: [],
+    shape: 'square',
+    color: '#3b82f6',
   },
   {
     id: 27,
@@ -246,6 +298,8 @@ let checklistItems = [
     direction: 'south',
     status: 'pending',
     photos: [],
+    shape: 'square',
+    color: '#3b82f6',
   },
   {
     id: 28,
@@ -255,6 +309,8 @@ let checklistItems = [
     direction: 'south',
     status: 'pending',
     photos: [],
+    shape: 'triangle',
+    color: '#ef4444',
   },
   {
     id: 29,
@@ -264,6 +320,8 @@ let checklistItems = [
     direction: 'south',
     status: 'pending',
     photos: [],
+    shape: 'circle',
+    color: '#ef4444',
   },
   {
     id: 30,
@@ -273,6 +331,8 @@ let checklistItems = [
     direction: 'south',
     status: 'pending',
     photos: [],
+    shape: 'circle',
+    color: '#3b82f6',
   },
 
   // WEST direction items (10 items)
@@ -284,6 +344,8 @@ let checklistItems = [
     direction: 'west',
     status: 'pending',
     photos: [],
+    shape: 'square',
+    color: '#3b82f6',
   },
   {
     id: 32,
@@ -293,6 +355,8 @@ let checklistItems = [
     direction: 'west',
     status: 'pending',
     photos: [],
+    shape: 'square',
+    color: '#3b82f6',
   },
   {
     id: 33,
@@ -302,6 +366,8 @@ let checklistItems = [
     direction: 'west',
     status: 'pending',
     photos: [],
+    shape: 'square',
+    color: '#3b82f6',
   },
   {
     id: 34,
@@ -311,6 +377,8 @@ let checklistItems = [
     direction: 'west',
     status: 'pending',
     photos: [],
+    shape: 'circle',
+    color: '#ef4444',
   },
   {
     id: 35,
@@ -320,6 +388,8 @@ let checklistItems = [
     direction: 'west',
     status: 'pending',
     photos: [],
+    shape: 'triangle',
+    color: '#3b82f6',
   },
   {
     id: 36,
@@ -329,6 +399,8 @@ let checklistItems = [
     direction: 'west',
     status: 'pending',
     photos: [],
+    shape: 'square',
+    color: '#3b82f6',
   },
   {
     id: 37,
@@ -338,6 +410,8 @@ let checklistItems = [
     direction: 'west',
     status: 'pending',
     photos: [],
+    shape: 'triangle',
+    color: '#ef4444',
   },
   {
     id: 38,
@@ -347,6 +421,8 @@ let checklistItems = [
     direction: 'west',
     status: 'pending',
     photos: [],
+    shape: 'circle',
+    color: '#3b82f6',
   },
   {
     id: 39,
@@ -356,6 +432,8 @@ let checklistItems = [
     direction: 'west',
     status: 'pending',
     photos: [],
+    shape: 'square',
+    color: '#ef4444',
   },
   {
     id: 40,
@@ -365,5 +443,19 @@ let checklistItems = [
     direction: 'west',
     status: 'pending',
     photos: [],
+    shape: 'triangle',
+    color: '#ef4444',
   },
 ];
+
+// Add a shape and color mapping reference
+const SHAPE_PART_MAPPING = {
+  walls: 'square',
+  roof: 'triangle',
+  foundation: 'circle',
+};
+
+const COLOR_MAPPING = {
+  structure: '#ef4444', // Structural issues (more critical)
+  default: '#3b82f6', // Non-structural issues
+};
