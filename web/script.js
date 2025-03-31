@@ -726,6 +726,10 @@ function setupBlueprintInteractions() {
       startDrag(e);
       showDropZone = true;
 
+      setTimeout(() => {
+        blueprintHelpText.style.display = 'none';
+      }, 1000);
+
       // Highlight khu vực blueprint khi đang kéo
       blueprintImageContainer.classList.add('dropzone-active');
     });
@@ -749,6 +753,10 @@ function setupBlueprintInteractions() {
           startDrag(e);
           showDropZone = true;
           blueprintImageContainer.classList.add('dropzone-active');
+
+          setTimeout(() => {
+            blueprintHelpText.style.display = 'none';
+          }, 1000);
         }, 100);
 
         // Nếu người dùng thả ra quá nhanh, hủy timeout
